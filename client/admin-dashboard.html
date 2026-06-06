@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCircle | Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/leaflet.css" />
+    <script src="js/leaflet.js"></script>
+  <style>
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: rgba(12, 18, 40, 0.9);
+      border-radius: 14px;
+      padding: 18px 20px;
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .stat-card h3 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-card p {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .stat-red h3   { color: #ff4b5c; }
+    .stat-green h3 { color: #22c55e; }
+    .stat-blue h3  { color: #38bdf8; }
+    .stat-yellow h3{ color: #facc15; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    #adminMap {
+      width: 100%;
+      height: 360px;
+      border-radius: 12px;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .alert-row {
+      background: rgba(255, 75, 92, 0.08);
+      border: 1px solid rgba(255, 75, 92, 0.3);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+
+    .alert-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .alert-row-title {
+      font-weight: 700;
+      color: #ff4b5c;
+      font-size: 0.9rem;
+    }
+
+    .alert-row-time {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    .alert-row p {
+      color: #d1d5db;
+      margin: 2px 0;
+    }
+
+    .resolve-btn {
+      margin-top: 8px;
+      padding: 6px 14px;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      border-radius: 8px;
+      color: #22c55e;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .resolve-btn:hover {
+      background: rgba(34, 197, 94, 0.25);
+    }
+
+    .volunteer-row {
+      background: rgba(34, 197, 94, 0.06);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .volunteer-row-name {
+      font-weight: 600;
+      color: #22c55e;
+    }
+
+    .volunteer-row-info {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 3px;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      box-shadow: 0 0 6px #22c55e;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+      70%  { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+      100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.85rem;
+      padding: 20px 0;
+    }
+
+    .admin-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: rgba(250, 204, 21, 0.15);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      color: #facc15;
+      margin-left: 8px;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- NAVBAR -->
+    <header class="top-bar">
+      <div class="nav-container">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">SAFECIRCLE</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="login.html" class="nav-link">Log In</a>
+          <a href="volunteer-register.html" class="nav-link">Volunteer</a>
+          <a href="volunteer-dashboard.html" class="nav-link">Dashboard</a>
+          <a href="evidence-viewer.html" class="nav-link">Evidence</a>
+          <a href="admin-dashboard.html" class="nav-link active-link">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- PAGE TITLE -->
+      <section class="card" style="margin-bottom:16px;">
+        <h1 style="font-size:1.5rem;">
+          Admin Dashboard
+          <span class="admin-badge">⚡ LIVE</span>
+        </h1>
+        <p style="font-size:0.9rem; color:#9ca3af; margin-top:4px;">
+          Real-time overview of all alerts and volunteers.
+        </p>
+      </section>
+
+      <!-- STATS ROW -->
+      <div class="admin-grid">
+        <div class="stat-card stat-red">
+          <h3 id="totalAlerts">0</h3>
+          <p>Total Alerts Today</p>
+        </div>
+        <div class="stat-card stat-green">
+          <h3 id="onlineVolunteers">0</h3>
+          <p>Volunteers Online</p>
+        </div>
+        <div class="stat-card stat-blue">
+          <h3 id="resolvedAlerts">0</h3>
+          <p>Resolved Alerts</p>
+        </div>
+        <div class="stat-card stat-yellow">
+          <h3 id="activeAlerts">0</h3>
+          <p>Active Alerts</p>
+        </div>
+      </div>
+
+      <!-- ALERTS + VOLUNTEERS -->
+      <div class="two-col">
+
+        <!-- ACTIVE ALERTS -->
+        <div class="card">
+          <p class="section-title">🚨 Active Alerts</p>
+          <div id="alertsList">
+            <p class="empty-msg">No active alerts right now.</p>
+          </div>
+        </div>
+
+        <!-- ONLINE VOLUNTEERS -->
+        <div class="card">
+          <p class="section-title">🟢 Online Volunteers</p>
+          <div id="volunteersList">
+            <p class="empty-msg">No volunteers online right now.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LIVE MAP -->
+      <section class="map-section">
+        <h2>Live Alert Map</h2>
+        <div id="adminMap"></div>
+      </section>
+
+    </main>
+
+    <footer class="footer">SafeCircle Admin — internal use only.</footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- <script src="js/auth-guard.js"></script>
+  <script>requireAdmin();</script> -->
+  <script src="js/admin.js"></script>
+  <script src="js/navbar.js"></script>
+</body>
+</html>

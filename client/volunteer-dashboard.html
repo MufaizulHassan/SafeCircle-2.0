@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCircle | Volunteer Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/leaflet.css" />
+    <script src="js/leaflet.js"></script>
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    .online-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      color: #22c55e;
+    }
+
+    .offline-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(255, 75, 92, 0.15);
+      border: 1px solid rgba(255, 75, 92, 0.5);
+      color: #ff4b5c;
+    }
+
+    #dashMap {
+      width: 100%;
+      height: 340px;
+      border-radius: 12px;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .alert-card {
+      background: rgba(255, 75, 92, 0.08);
+      border: 1px solid rgba(255, 75, 92, 0.4);
+      border-radius: 14px;
+      padding: 16px 18px;
+      animation: flashAlert 1.5s ease infinite;
+    }
+
+    @keyframes flashAlert {
+      0%   { box-shadow: 0 0 0 0 rgba(255, 75, 92, 0.5); }
+      70%  { box-shadow: 0 0 0 14px rgba(255, 75, 92, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 75, 92, 0); }
+    }
+
+    .alert-card h3 {
+      color: #ff4b5c;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .alert-card p {
+      font-size: 0.85rem;
+      color: #e0e0ff;
+      margin: 3px 0;
+    }
+
+    .respond-btn {
+      margin-top: 12px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      border: none;
+      border-radius: 999px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .respond-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .dismiss-btn {
+      margin-top: 8px;
+      margin-left: 8px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      color: #ccc;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .dismiss-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .no-alerts {
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .vol-setup-card {
+      margin-bottom: 16px;
+    }
+
+    .vol-setup-card input {
+      padding: 9px 12px;
+      background: rgba(2, 6, 23, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      border-radius: 10px;
+      color: #f1f5f9;
+      font-size: 0.9rem;
+      outline: none;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .go-online-btn {
+      margin-top: 12px;
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .go-online-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .go-offline-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 11px;
+      background: rgba(255, 75, 92, 0.15);
+      border: 1px solid rgba(255, 75, 92, 0.4);
+      border-radius: 12px;
+      color: #ff4b5c;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.15s ease;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- NAVBAR -->
+    <header class="top-bar">
+      <div class="nav-container">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">SAFECIRCLE</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="login.html" class="nav-link">Log In</a>
+          <a href="volunteer-register.html" class="nav-link">Volunteer</a>
+          <a href="volunteer-dashboard.html" class="nav-link active-link">Dashboard</a>
+          <a href="evidence-viewer.html" class="nav-link">Evidence</a>
+          <a href="admin-dashboard.html" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- VOLUNTEER SETUP -->
+      <section class="card vol-setup-card">
+        <div class="card-header">
+          <h1>Volunteer Dashboard
+            <span id="statusBadge" class="offline-badge">● Offline</span>
+          </h1>
+          <p>Go online to start receiving emergency alerts near you.</p>
+        </div>
+
+        <div class="form-row" style="margin-top:12px;">
+          <label style="font-size:0.85rem; color:#d1d5db;">Your Name</label>
+          <input type="text" id="volName" placeholder="Enter your name" />
+        </div>
+
+        <button class="go-online-btn" id="goOnlineBtn">
+          🟢 Go Online — Start Receiving Alerts
+        </button>
+        <button class="go-offline-btn" id="goOfflineBtn">
+          🔴 Go Offline
+        </button>
+      </section>
+
+      <div class="dashboard-grid">
+
+        <!-- LIVE ALERTS -->
+        <section class="card">
+          <div class="card-header">
+            <h2 style="font-size:1.1rem;">🚨 Live Alerts</h2>
+          </div>
+          <div id="alertFeed">
+            <p class="no-alerts">No active alerts nearby. Stay on standby.</p>
+          </div>
+        </section>
+
+        <!-- ACTIVITY LOG -->
+        <section class="card">
+          <div class="card-header">
+            <h2 style="font-size:1.1rem;">📋 Activity Log</h2>
+          </div>
+          <div id="activityLog" class="status-card-body">
+            <div class="status-entry info">Dashboard loaded. Go online to activate.</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- LIVE MAP -->
+      <section class="map-section">
+        <h2>Live Alert Map</h2>
+        <div id="dashMap"></div>
+      </section>
+
+    </main>
+
+    <footer class="footer">SafeCircle Volunteer Dashboard — community first.</footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- <script src="js/auth-guard.js"></script>
+  <script>requireVolunteer();</script> -->
+  <script src="js/dashboard.js"></script>
+  <script src="js/navbar.js"></script>
+</body>
+</html>

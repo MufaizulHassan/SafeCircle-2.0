@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCircle – Emergency Safety Button</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Leaflet Map Library -->
+  <link rel="stylesheet" href="css/leaflet.css" />
+  <script src="js/leaflet.js"></script>
+
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- NAVBAR -->
+    <header class="top-bar">
+      <div class="nav-container">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">SAFECIRCLE</span>
+        </div>
+
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link active-link">Home</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="login.html" class="nav-link">Log In</a>
+          <a href="volunteer-register.html" class="nav-link">Volunteer</a>
+          <a href="volunteer-dashboard.html" class="nav-link">Dashboard</a>
+          <a href="evidence-viewer.html" class="nav-link">Evidence</a>
+          <a href="admin-dashboard.html" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- MAIN EMERGENCY CARD -->
+      <section class="card main-card">
+        <div class="card-header">
+          <h1>Emergency Safety Button</h1>
+          <p>If you ever feel unsafe, tap this button once. We will alert nearby verified volunteers and your trusted contacts.</p>
+        </div>
+
+        <div class="button-wrapper">
+          <button id="alertButton" class="alert-button">
+            <span class="alert-text">TAP TO ALERT</span>
+          </button>
+        </div>
+
+        <!-- FORCE STOP EMERGENCY 
+        <div class="force-stop-wrapper" id="forceStopBox" style="display:none;">
+          <button id="forceStopBtn" class="force-stop-btn">
+            ⛔ Force Stop Emergency
+          </button>
+        </div> -->
+        <!-- FORCE STOP BOX
+        <div id="forceStopBox" style="display:none; margin-top:20px; text-align:center;">
+          <button id="forceStopBtn" class="force-stop-btn">
+            🛑 FORCE STOP RECORDING
+          </button>
+        </div> -->
+
+
+        <p class="helper-text">Single tap only. Your location and recording will start automatically.</p>
+
+        <div class="status-box" id="statusBox">
+          <p id="statusText">System ready. In real deployment, this will connect to live APIs.</p>
+        </div>
+      </section>
+
+      <!-- LIVE MAP SECTION -->
+      <section class="map-section">
+        <h2>Volunteer Live Location Map</h2>
+        <div id="liveMap"></div>
+      </section>
+
+
+      <!-- 3-PANEL STATUS SYSTEM -->
+      <section class="status-panel">
+
+        <!-- SYSTEM EVENTS -->
+        <div class="status-card system-card">
+          <div class="status-card-header">
+            <h3>🔵 System Events</h3>
+            <span class="status-time" id="sysTime"></span>
+          </div>
+          <div class="status-card-body" id="systemEvents"></div>
+        </div>
+
+        <!-- VOLUNTEER TRACKING -->
+        <div class="status-card volunteer-card">
+          <div class="status-card-header">
+            <h3>🟢 Volunteers Tracking</h3>
+          </div>
+
+          <div id="volunteerList">
+              <!-- 5 volunteers rows will be inserted by JS -->
+          </div>
+        </div>
+
+
+        <!-- POLICE + CONTACTS -->
+        <div class="status-card contact-card">
+          <div class="status-card-header">
+            <h3>🚨 Police & Contacts</h3>
+            <span class="status-time" id="policeTime"></span>
+          </div>
+          <div class="status-card-body" id="contactUpdates"></div>
+        </div>
+
+      </section>
+
+      <!-- INFO CARD -->
+      <section class="card info-card">
+        <h2>How this SafeCircle works :</h2>
+        <ul>
+          <li>Tap the button – the app simulates sending your live location.</li>
+          <li>We show a real-time status message on the screen.</li>
+          <li>Full version will integrate real volunteer APIs, police API, and secure cloud storage.</li>
+        </ul>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      Future scope: volunteer verification, admin dashboard, police API integration, secure evidence storage.
+    </footer>
+  </div>
+
+  <!-- FORCE STOP BOX -->
+  <div id="forceStopBox">
+    <button id="forceStopBtn" class="force-stop-btn">
+      🛑 FORCE STOP RECORDING
+    </button>
+  </div>
+
+
+
+  <!-- JAVASCRIPT FILES -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script src="js/volunteersData.js"></script>
+  <script src="js/locationUtils.js"></script>
+  <script src="js/nearestVolunteers.js"></script>
+  <script src="js/trustedContacts.js"></script>
+  <script src="js/mockPoliceApi.js"></script>
+  <script src="js/mockRouteTracker.js"></script>
+  <!-- <script src="/socket.io/socket.io.js"></script> -->
+  <!-- <script>
+    const socket = io();
+
+    // when SOS button clicked (example)
+    function triggerSOS(data) {
+        socket.emit("user-alert", data);
+    }
+
+    socket.on("new-alert", (alert) => {
+        console.log("📢 NEW ALERT RECEIVED:", alert);
+    });
+  </script> -->
+
+
+  <script src="js/app.js"></script>
+  <script src="js/navbar.js"></script>
+  
+
+</body>
+</html>

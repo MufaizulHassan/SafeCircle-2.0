@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCircle | Volunteer Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    /* --- OTP UI Style */
+    .otp-box {
+      margin-top: -10px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .otp-box input {
+      flex: 1;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    #sendVolOtp {
+      background: #4ade80;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #otpStatus {
+      font-size: 14px;
+      margin-top: 6px;
+      color: #9fffba;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- NAVBAR -->
+    <header class="top-bar">
+      <div class="nav-container">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">SAFECIRCLE</span>
+        </div>
+
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="login.html" class="nav-link">Log In</a>
+          <a href="volunteer-register.html" class="nav-link active-link">Volunteer</a>
+          <a href="volunteer-dashboard.html" class="nav-link">Dashboard</a>
+          <a href="evidence-viewer.html" class="nav-link">Evidence</a>
+          <a href="admin-dashboard.html" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content page-wrapper">
+
+      <section class="card volunteer-card">
+        <div class="card-header">
+          <h1>Volunteer Registration</h1>
+          <p class="muted">Help your community. Fill the form to register as a verified volunteer.</p>
+        </div>
+
+        <form id="volunteerForm" class="form">
+          <div class="form-grid">
+
+            <div class="form-row">
+              <label for="vName">Full name *</label>
+              <input id="vName" type="text" required />
+            </div>
+
+            <div class="form-row">
+              <label for="vEmail">Email</label>
+              <input id="vEmail" type="email" placeholder="you@example.com" />
+            </div>
+
+            <!-- ⭐ OTP BOX -->
+            <div class="otp-box">
+              <input type="text" id="vOtp" placeholder="6-digit OTP" />
+              <button type="button" id="sendVolOtp">Send OTP</button>
+            </div>
+            <p id="otpStatus"></p>
+            <!-- ⭐ END OTP BOX -->
+
+            <div class="form-row">
+              <label for="vPhone">Phone *</label>
+              <input id="vPhone" type="tel" required />
+            </div>
+
+            <div class="form-row">
+              <label for="vCity">City / Area *</label>
+              <input id="vCity" type="text" required />
+            </div>
+
+            <div class="form-row">
+              <label for="vAge">Age</label>
+              <input id="vAge" type="number" min="16" max="80" />
+            </div>
+
+            <div class="form-row">
+              <label for="vAvailability">Availability *</label>
+              <select id="vAvailability" required>
+                <option value="">Select availability</option>
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="night">Night</option>
+                <option value="flexible">Flexible</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="vTransport">Transport</label>
+              <select id="vTransport">
+                <option value="">No vehicle</option>
+                <option value="bike">Bike</option>
+                <option value="car">Car</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="vLang">Languages</label>
+              <input id="vLang" type="text" placeholder="Hindi, English" />
+            </div>
+
+            <div class="form-row full">
+              <label for="vNotes">Short note (optional)</label>
+              <textarea id="vNotes" rows="3"></textarea>
+            </div>
+
+            <div class="form-row">
+              <label for="vEmergencyName">Emergency contact name</label>
+              <input id="vEmergencyName" type="text" />
+            </div>
+
+            <div class="form-row">
+              <label for="vEmergencyPhone">Emergency contact phone</label>
+              <input id="vEmergencyPhone" type="tel" />
+            </div>
+
+            <div class="form-row full">
+              <label for="vProof">ID (optional)</label>
+              <input id="vProof" type="text" placeholder="Aadhar / DL" />
+            </div>
+
+          </div>
+
+          <div class="check-group">
+            <input id="volAgree" type="checkbox" />
+            <label for="volAgree">I agree to SafeCircle guidelines.</label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Register as Volunteer</button>
+            <button type="button" id="volClear" class="secondary-btn">Clear</button>
+          </div>
+
+          <p id="volunteerStatus" class="status-text"></p>
+        </form>
+
+      </section>
+
+      <aside class="side-note card">
+        <h3>What happens next :</h3>
+        <ul>
+          <li>Your profile is stored locally.</li>
+          <li>Admin verification + OTP required in future.</li>
+          <li>You’ll receive alerts only when in range.</li>
+        </ul>
+      </aside>
+
+    </main>
+
+    <footer class="footer">SafeCircle — community first. Demo only.</footer>
+  </div>
+
+  <script src="js/volunteer.js"></script>
+  <script src="js/navbar.js"></script>
+</body>
+</html>
+

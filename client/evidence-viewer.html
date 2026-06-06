@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCircle | Evidence Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .evidence-card {
+      background: rgba(12, 18, 40, 0.9);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .evidence-card video {
+      width: 100%;
+      border-radius: 10px;
+      background: #000;
+      margin-bottom: 12px;
+      max-height: 200px;
+    }
+
+    .evidence-meta {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+
+    .evidence-meta span {
+      display: block;
+      margin: 3px 0;
+    }
+
+    .evidence-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-download {
+      flex: 1;
+      padding: 8px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-delete {
+      flex: 1;
+      padding: 8px;
+      background: rgba(255, 75, 92, 0.15);
+      border: 1px solid rgba(255, 75, 92, 0.4);
+      border-radius: 8px;
+      color: #ff4b5c;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .btn-delete:hover {
+      background: rgba(255, 75, 92, 0.25);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+
+    .empty-state h2 {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+      color: #9ca3af;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      background: rgba(12, 18, 40, 0.9);
+      border-radius: 12px;
+      padding: 14px 20px;
+      border: 1px solid rgba(255,255,255,0.07);
+      min-width: 140px;
+    }
+
+    .stat-box h3 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #ff4b5c;
+    }
+
+    .stat-box p {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+      font-size: 0.95rem;
+    }
+
+    .clear-all-btn {
+      padding: 10px 20px;
+      background: rgba(255, 75, 92, 0.1);
+      border: 1px solid rgba(255, 75, 92, 0.3);
+      border-radius: 10px;
+      color: #ff4b5c;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .clear-all-btn:hover {
+      background: rgba(255, 75, 92, 0.2);
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- NAVBAR -->
+    <header class="top-bar">
+      <div class="nav-container">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">SAFECIRCLE</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="login.html" class="nav-link">Log In</a>
+          <a href="volunteer-register.html" class="nav-link">Volunteer</a>
+          <a href="volunteer-dashboard.html" class="nav-link">Dashboard</a>
+          <a href="evidence-viewer.html" class="nav-link active-link">Evidence</a>
+          <a href="admin-dashboard.html" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- PAGE HEADER -->
+      <section class="card" style="margin-bottom: 0;">
+        <div class="page-header">
+          <div>
+            <h1 style="font-size:1.5rem; margin-bottom:4px;">🔒 Evidence Vault</h1>
+            <p style="font-size:0.9rem; color:#9ca3af;">
+              All emergency recordings stored securely on this device.
+            </p>
+          </div>
+          <button class="clear-all-btn" id="clearAllBtn">🗑 Clear All</button>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-box">
+          <h3 id="totalCount">0</h3>
+          <p>Total Recordings</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalSize">0 MB</h3>
+          <p>Total Size</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="latestDate">—</h3>
+          <p>Latest Recording</p>
+        </div>
+      </div>
+
+      <!-- EVIDENCE GRID -->
+      <div id="evidenceGrid" class="evidence-grid">
+        <div class="loading-state">Loading evidence vault...</div>
+      </div>
+
+    </main>
+
+    <footer class="footer">SafeCircle — Evidence stored locally on your device only.</footer>
+  </div>
+  
+  <!-- <script src="js/auth-guard.js"></script>
+  <script>requireLogin();</script> -->
+  <script src="js/evidence.js"></script>
+  <script src="js/navbar.js"></script>
+</body>
+</html>

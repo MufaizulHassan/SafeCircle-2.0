@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCircle | My Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4b5c, #b00020);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+      margin: 0 auto 16px;
+      border: 3px solid rgba(255,255,255,0.2);
+      box-shadow: 0 0 20px rgba(255,75,92,0.4);
+    }
+
+    .profile-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(2, 6, 23, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      border-radius: 10px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      outline: none;
+      margin-top: 6px;
+    }
+
+    .profile-input:focus {
+      border-color: #f87171;
+      box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.4);
+    }
+
+    .profile-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .profile-label {
+      font-size: 0.85rem;
+      color: #d1d5db;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .profile-field {
+      margin-bottom: 14px;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #ff4b5c, #b00020);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+      margin-top: 8px;
+    }
+
+    .save-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255,75,92,0.4);
+    }
+
+    .status-msg {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      min-height: 20px;
+    }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      margin: 20px 0;
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- NAVBAR -->
+    <header class="top-bar">
+      <div class="nav-container">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">SAFECIRCLE</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="login.html" class="nav-link">Log In</a>
+          <a href="volunteer-register.html" class="nav-link">Volunteer</a>
+          <a href="volunteer-dashboard.html" class="nav-link">Dashboard</a>
+          <a href="evidence-viewer.html" class="nav-link">Evidence</a>
+          <a href="admin-dashboard.html" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- PROFILE HEADER -->
+      <section class="card" style="text-align:center; padding: 28px;">
+        <div class="avatar-circle" id="avatarCircle">MH</div>
+        <h1 id="profileName" style="font-size:1.4rem; margin-bottom:4px;">Loading...</h1>
+        <p id="profileEmail" style="font-size:0.9rem; color:#9ca3af;">...</p>
+        <span class="role-badge" id="profileRole">user</span>
+        <p id="profileJoined" style="font-size:0.8rem; color:#6b7280; margin-top:8px;"></p>
+      </section>
+
+      <div class="profile-grid">
+
+        <!-- EDIT PROFILE -->
+        <section class="card">
+          <h2 style="font-size:1.1rem; margin-bottom:16px;">✏️ Edit Profile</h2>
+
+          <div class="profile-field">
+            <label class="profile-label">Full Name</label>
+            <input type="text" id="editName" class="profile-input" placeholder="Your name" />
+          </div>
+
+          <div class="profile-field">
+            <label class="profile-label">Email (cannot change)</label>
+            <input type="email" id="editEmail" class="profile-input" disabled />
+          </div>
+
+          <div class="profile-field">
+            <label class="profile-label">Phone Number</label>
+            <input type="tel" id="editPhone" class="profile-input" placeholder="Your phone" />
+          </div>
+
+          <hr class="section-divider">
+
+          <h3 style="font-size:0.95rem; margin-bottom:12px;">📞 Trusted Contacts</h3>
+
+          <div class="contact-row">
+            <div>
+              <label class="profile-label">Contact 1 Name</label>
+              <input type="text" id="c1Name" class="profile-input" placeholder="Name" />
+            </div>
+            <div>
+              <label class="profile-label">Contact 1 Phone</label>
+              <input type="tel" id="c1Phone" class="profile-input" placeholder="Phone" />
+            </div>
+          </div>
+
+          <div class="contact-row">
+            <div>
+              <label class="profile-label">Contact 2 Name</label>
+              <input type="text" id="c2Name" class="profile-input" placeholder="Name" />
+            </div>
+            <div>
+              <label class="profile-label">Contact 2 Phone</label>
+              <input type="tel" id="c2Phone" class="profile-input" placeholder="Phone" />
+            </div>
+          </div>
+
+          <button class="save-btn" id="saveProfileBtn">💾 Save Changes</button>
+          <p class="status-msg" id="profileStatus"></p>
+        </section>
+
+        <!-- CHANGE PASSWORD -->
+        <section class="card">
+          <h2 style="font-size:1.1rem; margin-bottom:16px;">🔑 Change Password</h2>
+
+          <div class="profile-field">
+            <label class="profile-label">Current Password</label>
+            <input type="password" id="currentPass" class="profile-input" placeholder="Enter current password" />
+          </div>
+
+          <div class="profile-field">
+            <label class="profile-label">New Password</label>
+            <input type="password" id="newPass" class="profile-input" placeholder="Enter new password" />
+          </div>
+
+          <div class="profile-field">
+            <label class="profile-label">Confirm New Password</label>
+            <input type="password" id="confirmPass" class="profile-input" placeholder="Confirm new password" />
+          </div>
+
+          <button class="save-btn" id="changePassBtn">🔒 Change Password</button>
+          <p class="status-msg" id="passStatus"></p>
+        </section>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">SafeCircle — your data is stored securely.</footer>
+  </div>
+
+  <script src="js/navbar.js"></script>
+  <!-- <script src="js/auth-guard.js"></script>
+    <script>requireLogin();</script> -->
+  <script src="js/profile.js"></script>
+</body>
+</html>

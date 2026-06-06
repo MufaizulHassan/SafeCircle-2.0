@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCircle – Create Your Account</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="nav-container">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">SAFECIRCLE</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="signup.html" class="nav-link active-link">Sign Up</a>
+          <a href="login.html" class="nav-link">Log In</a>
+          <a href="volunteer-register.html" class="nav-link">Volunteer</a>
+          <a href="volunteer-dashboard.html" class="nav-link">Dashboard</a>
+          <a href="evidence-viewer.html" class="nav-link">Evidence</a>
+          <a href="admin-dashboard.html" class="nav-link">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Sign Up Form -->
+    <main class="content auth-container">
+
+      <section class="card auth-card">
+        <h1 class="auth-title">Create Your Account</h1>
+        <p class="auth-subtitle">
+          Join SafeCircle and stay protected with instant community support.
+        </p>
+
+        <form id="signupForm" class="auth-form">
+
+          <!-- BASIC USER INFO -->
+          <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" id="fullName" placeholder="Enter your full name" required />
+          </div>
+
+          <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="example@gmail.com" required />
+          </div>
+
+          <div class="input-group">
+            <label>Phone Number</label>
+            <input type="tel" id="phone" placeholder="9876543210" required />
+          </div>
+
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Choose a strong password" required />
+          </div>
+
+          <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="Re-enter password" required />
+          </div>
+
+
+          <!-- ============================= -->
+          <!-- 🔒 TRUSTED CONTACTS SECTION -->
+          <!-- ============================= -->
+
+          <h3 class="trusted-title">Trusted Contacts </h3>
+          <p class="trusted-desc">
+            These contacts will receive alerts when you trigger an emergency.
+          </p>
+
+          <!-- Contact 1 -->
+          <div class="input-group">
+            <label>Contact 1 – Name</label>
+            <input type="text" id="contactName1" placeholder="Mother / Father / Friend" />
+          </div>
+
+          <div class="input-group">
+            <label>Contact 1 – Phone Number</label>
+            <input type="tel" id="contactPhone1" placeholder="9998887777" />
+          </div>
+
+          <!-- Contact 2 -->
+          <div class="input-group">
+            <label>Contact 2 – Name</label>
+            <input type="text" id="contactName2" placeholder="Optional" />
+          </div>
+
+          <div class="input-group">
+            <label>Contact 2 – Phone Number</label>
+            <input type="tel" id="contactPhone2" placeholder="Optional" />
+          </div>
+
+
+          <!-- Terms -->
+          <div class="check-group">
+            <input type="checkbox" id="terms" required />
+            <label for="terms">I agree to the SafeCircle safety and privacy policy.</label>
+          </div>
+
+          <button type="submit" class="auth-btn">Create Account</button>
+
+          <p class="switch-auth">
+            Already have an account?
+            <a href="login.html">Sign In</a>
+          </p>
+        </form>
+
+        <p id="signupStatus" class="status-message"></p>
+      </section>
+    </main>
+
+  </div>
+  <script src="js/auth-guard.js"></script>
+  <!-- <script>redirectIfLoggedIn();</script>
+  <script src="js/auth.js"></script> -->
+  <script src="js/trustedContacts.js"></script>
+</body>
+</html>
