@@ -165,6 +165,13 @@
       display: none;
     }
   </style>
+  <script>
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    });
+  </script>
 </head>
 
 <body>
