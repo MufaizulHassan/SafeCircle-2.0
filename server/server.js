@@ -14,11 +14,32 @@ const connectDB = require("./db");
 connectDB();
 
 // ===== MIDDLEWARE =====
-app.use(express.json());
+// app.use(express.json());
+
+// // ===== ROUTES =====
+// const authRoutes = require("./routes/auth");
+// app.use("/api/auth", authRoutes);
+
+// const routeRoutes = require("./routes/route");
+// const systemRoutes = require("./routes/system");
+
+// app.use("/api/route", routeRoutes);
+// app.use("/api/system", systemRoutes);
+
+
+app.use(express.json({ limit: "20mb" }));
 
 // ===== ROUTES =====
 const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
+
+const routeRoutes = require("./routes/route");
+const systemRoutes = require("./routes/system");
+const evidenceRoutes = require("./routes/evidence");
+
+app.use("/api/route", routeRoutes);
+app.use("/api/system", systemRoutes);
+app.use("/api/evidence", evidenceRoutes);
 
 // ===== STATIC FILES =====
 app.use(express.static(path.join(__dirname, "../client")));

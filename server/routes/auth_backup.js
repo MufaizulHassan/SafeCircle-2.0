@@ -6,41 +6,33 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { protect, requireRole } = require("../middleware/auth");
 
-// If a signup email matches ADMIN_EMAILS (comma-separated in .env),
-// that account is created as an admin automatically. This solves the
-// "how does the very first admin get created" bootstrap problem.
-function getInitialRole(email) {
-  const adminEmails = (process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  return adminEmails.includes(email.toLowerCase()) ? "admin" : "user";
-}
-
 // ===== SIGNUP =====
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, phone, password, trustedContacts } = req.body;
 
+    // check if user already exists
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ success: false, message: "Email already registered" });
     }
 
+    // hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // create user
     const user = new User({
       name,
       email,
       phone,
       password: hashedPassword,
-      trustedContacts: trustedContacts || [],
-      role: getInitialRole(email),
+      trustedContacts: trustedContacts || []
     });
 
     await user.save();
 
+    // create token
     const token = jwt.sign(
       { id: user._id, email: user.email, name: user.name },
       process.env.JWT_SECRET,
@@ -56,9 +48,10 @@ router.post("/signup", async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role,
-      },
+        role: user.role
+      }
     });
+
   } catch (err) {
     console.error("Signup error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -70,16 +63,19 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ success: false, message: "Invalid email or password" });
     }
 
+    // check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: "Invalid email or password" });
     }
 
+    // create token
     const token = jwt.sign(
       { id: user._id, email: user.email, name: user.name },
       process.env.JWT_SECRET,
@@ -95,9 +91,10 @@ router.post("/login", async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role,
-      },
+        role: user.role
+      }
     });
+
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -105,27 +102,69 @@ router.post("/login", async (req, res) => {
 });
 
 // ===== GET PROFILE =====
-router.get("/profile", protect, async (req, res) => {
-  res.json({ success: true, user: req.user });
+router.get("/profile",protect, async (req, res) => {
+  try {
+    // const token = req.headers.authorization?.split(" ")[1];
+    // if (!token) {
+    //   return res.status(401).json({ success: false, message: "No token provided" });
+    // }
+
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // const user = await User.findById(decoded.id).select("-password");
+
+    // if (!user) {
+    //   return res.status(404).json({ success: false, message: "User not found" });
+    // }
+
+    // res.json({ success: true, user });
+
+      res.json({
+      success: true,
+      user: req.user
+    });
+
+  } catch (err) {
+    console.error("Profile error:", err);
+    res.status(401).json({ success: false, message: "Invalid token" });
+  }
 });
 
+
+
 // ===== UPDATE PROFILE =====
-router.put("/update-profile", protect, async (req, res) => {
+router.put("/update-profile",protect, async (req, res) => {
   try {
+    // const token = req.headers.authorization?.split(" ")[1];
+    // if (!token) {
+    //   return res.status(401).json({ success: false, message: "No token provided" });
+    // }
+
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     const { name, phone, trustedContacts } = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      { name, phone, trustedContacts: trustedContacts || [] },
+      {
+        name,
+        phone,
+        trustedContacts: trustedContacts || []
+      },
       { new: true }
     ).select("-password");
 
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // update token with new name
     const newToken = jwt.sign(
       { id: updatedUser._id, email: updatedUser.email, name: updatedUser.name },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+    // update localStorage data
     res.json({
       success: true,
       message: "Profile updated successfully",
@@ -136,9 +175,10 @@ router.put("/update-profile", protect, async (req, res) => {
         email: updatedUser.email,
         phone: updatedUser.phone,
         role: updatedUser.role,
-        trustedContacts: updatedUser.trustedContacts,
-      },
+        trustedContacts: updatedUser.trustedContacts
+      }
     });
+
   } catch (err) {
     console.error("Update profile error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -146,93 +186,37 @@ router.put("/update-profile", protect, async (req, res) => {
 });
 
 // ===== CHANGE PASSWORD =====
-router.put("/change-password", protect, async (req, res) => {
+router.put("/change-password",protect, async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user._id);
+    // const token = req.headers.authorization?.split(" ")[1];
+    // if (!token) {
+    //   return res.status(401).json({ success: false, message: "No token provided" });
+    // }
 
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // verify current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: "Current password is incorrect" });
     }
 
+    // hash new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     await user.save();
 
     res.json({ success: true, message: "Password changed successfully" });
+
   } catch (err) {
     console.error("Change password error:", err);
     res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-// ===== LIST USERS (admin only — powers the Manage Users panel) =====
-router.get("/users", protect, requireRole("admin"), async (req, res) => {
-  try {
-    const users = await User.find().select("-password").sort({ createdAt: -1 });
-    res.json({ success: true, users });
-  } catch (err) {
-    console.error("List users error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-// ===== UPDATE A USER'S ROLE (admin only) =====
-router.put("/users/:id/role", protect, requireRole("admin"), async (req, res) => {
-  try {
-    const { role } = req.body;
-
-    if (!["user", "volunteer", "admin"].includes(role)) {
-      return res.status(400).json({ success: false, message: "Invalid role" });
-    }
-
-    const updated = await User.findByIdAndUpdate(
-      req.params.id,
-      { role },
-      { new: true }
-    ).select("-password");
-
-    if (!updated) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    res.json({ success: true, user: updated });
-  } catch (err) {
-    console.error("Update role error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-
-// ===== VERIFY PASSWORD =====
-router.post("/verify-password", protect, async (req, res) => {
-  try {
-    const { password } = req.body;
-
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-
-    const valid = await bcrypt.compare(password, user.password);
-
-    res.json({
-      success: true,
-      valid
-    });
-
-  } catch (err) {
-    console.error("Verify password error:", err);
-
-    res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
   }
 });
 
