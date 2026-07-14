@@ -32,6 +32,24 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "volunteer", "admin"],
     default: "user"
   },
+  volunteerApplication: {
+    fullName: String,
+    city: String,
+    age: Number,
+    availability: String,
+    transport: String,
+    languages: String,
+    note: String,
+    emergencyContactName: String,
+    emergencyContactPhone: String,
+    idProof: String,
+    submittedAt: Date,
+  },
+  volunteerStatus: {
+    type: String,
+    enum: ["none", "pending"],
+    default: "none",
+  },
   createdAt: {
     type: Date,
     default: Date.now

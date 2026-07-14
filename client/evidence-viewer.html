@@ -184,6 +184,21 @@
 
     <main class="content">
 
+      <!-- SYNCED EVIDENCE (from server) -->
+      <section class="card" style="margin-top: 16px; margin-bottom: 0;">
+        <div class="page-header">
+          <div>
+            <h1 style="font-size:1.3rem; margin-bottom:4px;">☁️ Synced Evidence</h1>
+            <p style="font-size:0.9rem; color:#9ca3af;" id="syncedSubtitle">
+              Recordings saved to the server.
+            </p>
+          </div>
+        </div>
+      </section>
+      <div id="syncedEvidenceGrid" class="evidence-grid">
+        <div class="loading-state">Loading synced evidence...</div>
+      </div>
+
       <!-- PAGE HEADER -->
       <section class="card" style="margin-bottom: 0;">
         <div class="page-header">
@@ -223,8 +238,8 @@
     <footer class="footer">SafeCircle — Evidence stored locally on your device only.</footer>
   </div>
   
-  <!-- <script src="js/auth-guard.js"></script>
-  <script>requireLogin();</script> -->
+  <script src="js/auth-guard.js"></script>
+  <script>requireLogin();</script>
   <script src="js/evidence.js"></script>
   <script src="js/navbar.js"></script>
 </body>

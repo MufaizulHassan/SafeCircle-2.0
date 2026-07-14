@@ -311,28 +311,43 @@ function addPoliceEvent(msg) {
 /* -----------------------------------------------------
    ORS ROUTE FETCHER 
 ----------------------------------------------------- */
+// async function getRoute(lat1, lon1, lat2, lon2) {
+//   const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
+
+//   try {
+//     const res = await fetch(url, {
+//       method: "POST",
+//       headers: {
+//         "Authorization": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjhlNTE5ZDNiNzQwMTQ4NTM4MjZiODIwYmZkNzFmYTZiIiwiaCI6Im11cm11cjY0In0=",
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         coordinates: [
+//           [lon1, lat1],
+//           [lon2, lat2],
+//         ],
+//       }),
+//     });
+
+//     const data = await res.json();
+//     if (!data.features || !data.features[0]) return null;
+
+//     return data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+//   } catch {
+//     return null;
+//   }
+// }
+
+
 async function getRoute(lat1, lon1, lat2, lon2) {
-  const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
-
   try {
-    const res = await fetch(url, {
+    const res = await fetch("/api/route", {
       method: "POST",
-      headers: {
-        "Authorization": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjhlNTE5ZDNiNzQwMTQ4NTM4MjZiODIwYmZkNzFmYTZiIiwiaCI6Im11cm11cjY0In0=",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        coordinates: [
-          [lon1, lat1],
-          [lon2, lat2],
-        ],
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lat1, lon1, lat2, lon2 }),
     });
-
     const data = await res.json();
-    if (!data.features || !data.features[0]) return null;
-
-    return data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+    return data.route || null;
   } catch {
     return null;
   }
@@ -487,6 +502,36 @@ async function startEmergencyRecording() {
 /* -----------------------------------------------------
    INDEXED DB STORAGE (FIXED)
 ----------------------------------------------------- */
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function uploadEvidenceToServer(blob, lat, lon, time) {
+  try {
+    const videoBase64 = await blobToBase64(blob);
+    const scToken = localStorage.getItem("sc_token");
+    await fetch("/api/evidence", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(scToken ? { Authorization: `Bearer ${scToken}` } : {}),
+      },
+      body: JSON.stringify({ videoBase64, lat, lon, time }),
+    });
+    addSystemEvent("☁️ Evidence synced to server");
+  } catch (err) {
+    console.warn("Evidence sync failed — kept locally only:", err);
+    addSystemEvent("⚠️ Evidence saved locally only (server sync failed)");
+  }
+}
+
+
 function saveRecordingToIndexedDB() {
 
   // prevent double-save
@@ -503,6 +548,7 @@ function saveRecordingToIndexedDB() {
   console.log("saveRecordingToIndexedDB CALLED");
 
   const blob = new Blob(recordedChunks, { type: "video/webm" });
+  uploadEvidenceToServer(blob, userLat, userLon, new Date().toISOString());
   const request = indexedDB.open("SafeCircleEvidenceDB", 1);
 
   request.onupgradeneeded = (e) => {

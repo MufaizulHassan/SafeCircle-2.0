@@ -1,10 +1,49 @@
 // server/routes/auth.js
+
+const rateLimit = require("express-rate-limit");
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { success: false, message: "Too many attempts, please try again later." },
+});
+
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: "Too many OTP requests, try again later." },
+});
+
+
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { protect, requireRole } = require("../middleware/auth");
+
+const otpStore = {}; // demo only — resets on server restart
+
+const nodemailer = require("nodemailer");
+
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.GMAIL_USER,
+//     pass: process.env.GMAIL_APP_PASSWORD,
+//   },
+// });
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
 // If a signup email matches ADMIN_EMAILS (comma-separated in .env),
 // that account is created as an admin automatically. This solves the
@@ -96,6 +135,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        // volunteerStatus: user.volunteerStatus,
       },
     });
   } catch (err) {
@@ -235,5 +275,94 @@ router.post("/verify-password", protect, async (req, res) => {
     });
   }
 });
+
+// // ===== APPLY TO BECOME A VOLUNTEER =====
+// router.post("/apply-volunteer", protect, async (req, res) => {
+//   try {
+//     req.user.volunteerStatus = "pending";
+//     await req.user.save();
+//     res.json({ success: true, volunteerStatus: "pending" });
+//   } catch (err) {
+//     console.error("Apply volunteer error:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+
+// // ===== SEND VOLUNTEER OTP (demo mode — logs to server console) =====
+// router.post("/send-volunteer-otp", protect, async (req, res) => {
+//   const { email } = req.body;
+//   if (!email) return res.status(400).json({ success: false, message: "Email required" });
+
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//   otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+
+//   console.log(`📩 [DEMO MODE] OTP for ${email}: ${otp}`);
+
+//   res.json({ success: true, message: "OTP sent (demo mode — check server console)" });
+// });
+
+router.post("/send-volunteer-otp", protect, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ success: false, message: "Email required" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+
+  try {
+    await transporter.sendMail({
+      from: `"SafeCircle" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: "Your SafeCircle Volunteer Verification Code",
+      html: `<p>Your OTP for volunteer registration is:</p><h2>${otp}</h2><p>This code expires in 5 minutes.</p>`,
+    });
+    res.json({ success: true, message: "OTP sent to your email — check inbox" });
+  } catch (err) {
+    console.error("Email send error:", err);
+    console.log(`📩 [FALLBACK] OTP for ${email}: ${otp}`);
+    res.json({ success: true, message: "Email failed — check server console for OTP (fallback)" });
+  }
+});
+
+
+
+// ===== VERIFY VOLUNTEER OTP =====
+router.post("/verify-volunteer-otp", protect, (req, res) => {
+  const { email, otp } = req.body;
+  const record = otpStore[email];
+
+  if (!record || record.expiresAt < Date.now()) {
+    return res.json({ success: true, valid: false, message: "OTP expired or not found" });
+  }
+
+  const valid = record.otp === otp;
+  if (valid) delete otpStore[email];
+
+  res.json({ success: true, valid });
+});
+
+// ===== APPLY TO BECOME A VOLUNTEER (full form) =====
+router.post("/apply-volunteer", protect, async (req, res) => {
+  try {
+    const {
+      fullName, city, age, availability, transport, languages, note,
+      emergencyContactName, emergencyContactPhone, idProof,
+    } = req.body;
+
+    req.user.volunteerStatus = "pending";
+    req.user.volunteerApplication = {
+      fullName, city, age, availability, transport, languages, note,
+      emergencyContactName, emergencyContactPhone, idProof,
+      submittedAt: new Date(),
+    };
+    await req.user.save();
+
+    res.json({ success: true, volunteerStatus: "pending" });
+  } catch (err) {
+    console.error("Apply volunteer error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
 
 module.exports = router;

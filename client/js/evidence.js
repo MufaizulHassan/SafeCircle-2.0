@@ -138,8 +138,65 @@ function deleteEvidence(key, cardEl) {
 }
 
 // ===== CLEAR ALL =====
+
+  async function loadSyncedEvidence() {
+    const grid = document.getElementById("syncedEvidenceGrid");
+    const subtitle = document.getElementById("syncedSubtitle");
+    const token = localStorage.getItem("sc_token");
+
+    if (!token) {
+      grid.innerHTML = `<div class="empty-state"><h2>Log in to view synced evidence</h2></div>`;
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/evidence", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        grid.innerHTML = `<div class="empty-state"><h2>Could not load synced evidence</h2></div>`;
+        return;
+      }
+
+      const items = data.evidence;
+      const user = JSON.parse(localStorage.getItem("sc_user") || "null");
+      subtitle.textContent =
+        user?.role === "admin"
+          ? `Showing evidence from all users (${items.length} total).`
+          : `Showing your own synced recordings (${items.length} total).`;
+
+      if (items.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><h2>No synced recordings yet</h2></div>`;
+        return;
+      }
+
+      grid.innerHTML = "";
+      items.forEach((item) => {
+        const date = new Date(item.recordedAt);
+        const card = document.createElement("div");
+        card.className = "evidence-card";
+        card.innerHTML = `
+          <video src="/api/evidence/${item._id}/file?token=${token}" controls></video>
+          <div class="evidence-meta">
+            <span>📅 ${date.toLocaleDateString()}</span>
+            <span>🕐 ${date.toLocaleTimeString()}</span>
+            ${item.user ? `<span>👤 ${item.user.name}</span>` : `<span>👤 Anonymous</span>`}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Synced evidence load error:", err);
+      grid.innerHTML = `<div class="empty-state"><h2>Server offline</h2></div>`;
+    }
+  }
+
 document.addEventListener("DOMContentLoaded", () => {
+
   loadEvidences();
+  loadSyncedEvidence();
 
   document.getElementById("clearAllBtn").addEventListener("click", async () => {
     if (!confirm("Delete ALL recordings permanently? This cannot be undone.")) return;
