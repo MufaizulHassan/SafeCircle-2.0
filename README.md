@@ -1,8 +1,21 @@
 # 🚨 SafeCircle — Community Safety Web App
 
-SafeCircle is a **placement-oriented web project** focused on real-time safety assistance.  
-With a single emergency tap, the system **starts live recording**, **shares location**, and **alerts nearby volunteers** with animated routing and ETA.
 
+# 🛡️ SafeCircle 
+
+> A community-powered emergency response platform for women's safety.
+
+<p align="center">
+  <a href="https://safecircle-frontend.onrender.com/" target="_blank">
+    <img src="https://img.shields.io/badge/🚀-Live%20Demo-success?style=for-the-badge" alt="Live Demo"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://safecircle-frontend.onrender.com/">
+    🌐 https://safecircle-frontend.onrender.com/
+  </a>
+</p>
 ---
 
 ## 🔥 Key Features
