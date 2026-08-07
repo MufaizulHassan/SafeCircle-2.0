@@ -8,43 +8,60 @@ export default function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const linkClass = ({ isActive }) => isActive ? "nav-link active-link" : "nav-link";
 
   const handleLogout = () => {
     setDropdownOpen(false);
+    setMobileOpen(false);
     dispatch(logout());
     navigate("/login");
   };
 
   const goTo = (path) => {
     setDropdownOpen(false);
+    setMobileOpen(false);
     navigate(path);
+  };
+
+  const handleNavClick = () => {
+    setMobileOpen(false);
   };
 
   return (
     <header className="top-bar">
-      <div className="brand">
+      <div className="brand" onClick={() => navigate("/")}>
         <span className="brand-dot"></span>
         <span className="brand-name">SAFECIRCLE</span>
       </div>
 
-      <nav className="nav-links">
-        <NavLink to="/" className={linkClass}>Home</NavLink>
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setMobileOpen((p) => !p)}
+        aria-label="Toggle menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav className={`nav-links${mobileOpen ? " open" : ""}`}>
+        <NavLink to="/" className={linkClass} onClick={handleNavClick}>Home</NavLink>
 
         {!user && (
           <>
-            <NavLink to="/signup" className={linkClass}>Sign Up</NavLink>
-            <NavLink to="/login" className={linkClass}>Log In</NavLink>
+            <NavLink to="/signup" className={linkClass} onClick={handleNavClick}>Sign Up</NavLink>
+            <NavLink to="/login" className={linkClass} onClick={handleNavClick}>Log In</NavLink>
           </>
         )}
 
-        <NavLink to="/volunteer-register" className={linkClass}>Volunteer</NavLink>
-        <NavLink to="/volunteer-dashboard" className={linkClass}>Dashboard</NavLink>
-        <NavLink to="/evidence" className={linkClass}>Evidence</NavLink>
+        <NavLink to="/volunteer-register" className={linkClass} onClick={handleNavClick}>Volunteer</NavLink>
+        <NavLink to="/volunteer-dashboard" className={linkClass} onClick={handleNavClick}>Dashboard</NavLink>
+        <NavLink to="/evidence" className={linkClass} onClick={handleNavClick}>Evidence</NavLink>
 
         {user?.role === "admin" && (
-          <NavLink to="/admin-dashboard" className={linkClass}>Admin</NavLink>
+          <NavLink to="/admin-dashboard" className={linkClass} onClick={handleNavClick}>Admin</NavLink>
         )}
       </nav>
 
