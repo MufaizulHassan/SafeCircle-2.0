@@ -13,6 +13,8 @@ export default function AdminDashboard() {
   const [usersLoading, setUsersLoading] = useState(true);
   // liveAI — latest NLP result. Replaces on every new chunk, never stacks.
   const [liveAI, setLiveAI] = useState(null);
+  // Track severity per victim for per-alert badges
+  const [alertSeverities, setAlertSeverities] = useState({});
 
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -55,11 +57,24 @@ export default function AdminDashboard() {
         severity: data.severity,
         keyword_triggered: data.keyword_triggered,
       });
+      // Also store severity keyed by victimSocketId for per-alert badges
+      if (data.victimSocketId) {
+        setAlertSeverities((prev) => ({
+          ...prev,
+          [data.victimSocketId]: {
+            severity: data.severity,
+            emotion: data.emotion,
+            intensity: data.intensity,
+            keyword_triggered: data.keyword_triggered,
+          },
+        }));
+      }
     });
 
     socket.on("admin-emergency-ended", () => {
       setAlerts([]);
       setLiveAI(null); // clear monitor when emergency ends
+      setAlertSeverities({});
       Object.values(alertMarkers.current).forEach((m) => mapInstance.current?.removeLayer(m));
       alertMarkers.current = {};
     });
@@ -140,6 +155,14 @@ export default function AdminDashboard() {
     }
   };
 
+  // Get severity for a specific alert — per-victim if available, fallback to global liveAI
+  const getAlertSeverity = (alert) => {
+    if (alert.victimSocketId && alertSeverities[alert.victimSocketId]) {
+      return alertSeverities[alert.victimSocketId];
+    }
+    return liveAI;
+  };
+
   const totalUsers = users.length;
   const volunteerCount = users.filter(u => u.role === "volunteer").length;
   const adminCount = users.filter(u => u.role === "admin").length;
@@ -208,18 +231,63 @@ export default function AdminDashboard() {
                 <p>No active alerts — all clear</p>
               </div>
             ) : (
-              alerts.map((alert) => (
-                <div key={alert.id} className="admin-alert-item">
-                  <div className="admin-alert-left">
-                    <span className="admin-alert-pulse"></span>
-                    <div>
-                      <div className="admin-alert-text">Emergency alert triggered</div>
-                      <div className="admin-alert-meta">{alert.notified} volunteer(s) notified · Lat {alert.lat?.toFixed(4)}, Lon {alert.lon?.toFixed(4)}</div>
+              alerts.map((alert) => {
+                const sev = getAlertSeverity(alert);
+                const sevLevel = sev?.severity;
+                const sevStyle = sevLevel ? SEVERITY_COLORS[sevLevel] : null;
+                return (
+                  <div key={alert.id} className="vd-alert-card">
+                    <div className="vd-alert-top">
+                      <div className="vd-alert-left">
+                        <span className="admin-alert-pulse"></span>
+                        <div>
+                          <div className="vd-alert-title">🚨 Emergency Alert</div>
+                          <div className="vd-alert-meta">
+                            {alert.notified} volunteer(s) notified · Lat {alert.lat?.toFixed(4)}, Lon {alert.lon?.toFixed(4)}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {sevLevel && (
+                          <div
+                            className="vd-alert-severity"
+                            style={{
+                              background: sevStyle?.bg,
+                              color: sevStyle?.color,
+                              borderColor: sevStyle?.border,
+                              animation: sevLevel === "critical" ? "pulse-red 1.5s infinite" : "none",
+                            }}
+                          >
+                            {sevLevel === "critical" && "🔴 "}
+                            {sevLevel === "high" && "🟠 "}
+                            {sevLevel === "medium" && "🟡 "}
+                            {sevLevel === "low" && "🟢 "}
+                            {sevLevel.toUpperCase()}
+                          </div>
+                        )}
+                        <span className="status-time">{new Date(alert.time).toLocaleTimeString()}</span>
+                      </div>
                     </div>
+                    {sev && sev.emotion && (
+                      <div className="vd-alert-ai-strip">
+                        <span className="vd-ai-strip-emoji">{getEmotionIcon(sev.emotion)}</span>
+                        <span className="vd-ai-strip-text">{sev.emotion?.toUpperCase()}</span>
+                        <div className="vd-ai-strip-bar">
+                          <div
+                            className="vd-ai-strip-fill"
+                            style={{
+                              width: `${(sev.intensity * 100).toFixed(0)}%`,
+                              background: sevStyle?.color || "#fff",
+                            }}
+                          />
+                        </div>
+                        <span className="vd-ai-strip-pct">{(sev.intensity * 100).toFixed(0)}%</span>
+                        {sev.keyword_triggered && <span className="vd-ai-strip-kw">⚠️</span>}
+                      </div>
+                    )}
                   </div>
-                  <span className="status-time">{new Date(alert.time).toLocaleTimeString()}</span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
