@@ -1,7 +1,3 @@
-
-
-
-
 import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -26,6 +22,8 @@ export default function VolunteerDashboard() {
   // liveAI — latest NLP result. Replaces on every new chunk, never stacks.
   // Only shown when an active alert exists.
   const [liveAI, setLiveAI] = useState(null);
+  // Track severity per victim for per-alert badges
+  const [alertSeverities, setAlertSeverities] = useState({});
 
   const userLocation = useRef({ lat: null, lon: null });
   const victimSocketId = useRef(null);
@@ -116,6 +114,18 @@ export default function VolunteerDashboard() {
         severity: data.severity,
         keyword_triggered: data.keyword_triggered,
       });
+      // Also store severity keyed by victimSocketId for per-alert badges
+      if (data.victimSocketId) {
+        setAlertSeverities((prev) => ({
+          ...prev,
+          [data.victimSocketId]: {
+            severity: data.severity,
+            emotion: data.emotion,
+            intensity: data.intensity,
+            keyword_triggered: data.keyword_triggered,
+          },
+        }));
+      }
       addLog(`🧠 AI: ${data.emotion?.toUpperCase()} — ${data.severity?.toUpperCase()}`);
     });
 
@@ -134,6 +144,7 @@ export default function VolunteerDashboard() {
       setLiveAlerts([]);
       setActiveDistance(null);
       setLiveAI(null); // clear monitor when emergency ends
+      setAlertSeverities({});
       victimSocketId.current = null;
       clearInterval(liveUpdateInterval.current);
       liveUpdateInterval.current = null;
@@ -200,132 +211,290 @@ export default function VolunteerDashboard() {
     critical: { bg: "rgba(239,68,68,0.18)",  color: "#f87171", border: "#ef4444" },
   };
 
+  const getEmotionIcon = (emotion) => {
+    switch (emotion) {
+      case "fear": return "😨";
+      case "anger": return "😡";
+      case "sadness": return "😢";
+      case "surprise": return "😲";
+      case "joy": return "😊";
+      default: return "❤️";
+    }
+  };
+
+  // Get severity for a specific alert — per-victim if available, fallback to global liveAI
+  const getAlertSeverity = (alert) => {
+    if (alert.victimSocketId && alertSeverities[alert.victimSocketId]) {
+      return alertSeverities[alert.victimSocketId];
+    }
+    return liveAI;
+  };
+
+  const getSeverityLabel = (sev) => {
+    if (!sev) return null;
+    return sev.severity;
+  };
+
   return (
-    <div className="home-page">
-      <div className="card vol-setup-card">
-        <div className="card-header">
-          <h1>Volunteer Dashboard</h1>
-          <span className={`status-badge ${isOnline ? "status-success" : "status-offline"}`}>
-            {isOnline ? "● Online" : "● Offline"}
-          </span>
+    <div className="home-page vd-page">
+
+      {/* ===== HEADER CARD ===== */}
+      <div className="card vd-header-card">
+        <div className="vd-header-top">
+          <div className="vd-header-left">
+            <div className="vd-header-icon">
+              {isOnline ? "🟢" : "🔴"}
+            </div>
+            <div>
+              <h1 className="vd-title">Volunteer Dashboard</h1>
+              <p className="vd-subtitle">
+                {isOnline
+                  ? `Online as ${volunteerName} — receiving emergency alerts`
+                  : "Go online to start receiving emergency alerts near you"}
+              </p>
+            </div>
+          </div>
+          <div className={`vd-status-pill ${isOnline ? "vd-status-pill--online" : "vd-status-pill--offline"}`}>
+            <span className="vd-status-dot"></span>
+            {isOnline ? "ONLINE" : "OFFLINE"}
+          </div>
         </div>
-        <p>Go online to start receiving emergency alerts near you.</p>
 
-        <div className="form-row" style={{ marginTop: "12px" }}>
-          <label>Your Name</label>
-          <input value={volunteerName} onChange={(e) => setVolunteerName(e.target.value)} placeholder="Enter your name" disabled={isOnline} />
+        {/* Setup section */}
+        <div className="vd-setup-section">
+          <div className="vd-name-row">
+            <div className="vd-input-group">
+              <label className="vd-label">Your Name</label>
+              <input
+                className="vd-input"
+                value={volunteerName}
+                onChange={(e) => setVolunteerName(e.target.value)}
+                placeholder="Enter your name to go online"
+                disabled={isOnline}
+              />
+            </div>
+            {isOnline ? (
+              <button className="go-offline-btn vd-toggle-btn" onClick={goOffline}>🔴 Go Offline</button>
+            ) : (
+              <button className="go-online-btn vd-toggle-btn" onClick={goOnline}>🟢 Go Online</button>
+            )}
+          </div>
         </div>
 
-        {isOnline ? (
-          <button className="go-offline-btn" onClick={goOffline}>🔴 Go Offline</button>
-        ) : (
-          <button className="go-online-btn" onClick={goOnline}>🟢 Go Online — Start Receiving Alerts</button>
-        )}
-
+        {/* Active mission distance */}
         {activeDistance !== null && (
-          <div className="status-message-box" style={{ marginTop: "12px" }}>
-            📍 Victim is <strong>{activeDistance} km</strong> away — updating live
+          <div className="vd-active-mission">
+            <span className="vd-mission-pulse"></span>
+            <div className="vd-mission-info">
+              <span className="vd-mission-label">ACTIVE MISSION</span>
+              <span className="vd-mission-distance">
+                📍 Victim is <strong>{activeDistance} km</strong> away — updating live
+              </span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* ===== LIVE AI MONITOR — only when an alert is active ===== */}
-      {liveAlerts.length > 0 && (
-        <div className="card" style={{ marginTop: "16px", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(15,5,5,0.95)" }}>
-          <h2 style={{ color: "#f87171", marginBottom: "14px", fontSize: "1rem", letterSpacing: "0.05em" }}>
-            🧠 LIVE AI MONITOR
-          </h2>
-
-          {liveAI ? (
-            <>
-              {/* Latest vocal — replaces on every new chunk */}
-              <div style={{
-                padding: "10px 14px", borderRadius: "8px", marginBottom: "12px",
-                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-                fontSize: "0.95rem", color: "#e2e8f0", fontStyle: "italic"
-              }}>
-                🎙️ "{liveAI.text}"
-              </div>
-
-              {/* Emotion + intensity */}
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-                <span style={{ fontSize: "1.5rem" }}>
-                  {liveAI.emotion === "fear" ? "😨" : liveAI.emotion === "anger" ? "😡" : liveAI.emotion === "sadness" ? "😢" : liveAI.emotion === "surprise" ? "😲" : liveAI.emotion === "joy" ? "😊" : "❤️"}
-                </span>
-                <div>
-                  <div style={{ fontWeight: 700, color: "#fff", fontSize: "0.95rem" }}>
-                    {liveAI.emotion?.toUpperCase()}
-                  </div>
-                  <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
-                    {(liveAI.intensity * 100).toFixed(0)}% intensity
-                    {liveAI.keyword_triggered && <span style={{ color: "#f59e0b", marginLeft: "8px" }}>⚠️ keyword detected</span>}
-                  </div>
-                </div>
-                {/* Intensity bar */}
-                <div style={{ flex: 1, height: "6px", background: "rgba(255,255,255,0.1)", borderRadius: "3px", overflow: "hidden" }}>
-                  <div style={{
-                    width: `${(liveAI.intensity * 100).toFixed(0)}%`,
-                    height: "100%",
-                    background: SEVERITY_COLORS[liveAI.severity]?.color || "#fff",
-                    borderRadius: "3px",
-                    transition: "width 0.4s ease"
-                  }} />
-                </div>
-              </div>
-
-              {/* Severity badge */}
-              <div style={{
-                padding: "12px 16px", borderRadius: "10px", textAlign: "center",
-                fontWeight: 800, fontSize: "1.1rem", letterSpacing: "0.08em",
-                background: SEVERITY_COLORS[liveAI.severity]?.bg,
-                color: SEVERITY_COLORS[liveAI.severity]?.color,
-                border: `1px solid ${SEVERITY_COLORS[liveAI.severity]?.border}`,
-                animation: liveAI.severity === "critical" ? "pulse-red 1s infinite" : "none",
-              }}>
-                {liveAI.severity === "critical" && "🔴 "}
-                {liveAI.severity === "high" && "🟠 "}
-                {liveAI.severity === "medium" && "🟡 "}
-                {liveAI.severity === "low" && "🟢 "}
-                {liveAI.severity?.toUpperCase()}
-              </div>
-            </>
-          ) : (
-            <p className="status-note">Listening for speech... speak clearly to trigger AI analysis.</p>
-          )}
+      {/* ===== STAT CARDS ===== */}
+      <div className="vd-stats-row">
+        <div className="admin-stat-card">
+          <div className="admin-stat-icon admin-stat-icon--alerts">🚨</div>
+          <div className="admin-stat-info">
+            <div className="admin-stat-value">{liveAlerts.length}</div>
+            <div className="admin-stat-label">Incoming Alerts</div>
+          </div>
         </div>
-      )}
-
-      <div className="dashboard-grid">
-        <div className="card">
-          <h2>🚨 Live Alerts</h2>
-          {liveAlerts.length === 0 ? (
-            <p className="status-note">No active alerts nearby. Stay on standby.</p>
-          ) : (
-            liveAlerts.map((alert) => (
-              <div key={alert.id} className="status-item" style={{ flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span className="status-message">🚨 Alert — {alert.distance} km away</span>
-                  <button className="accept-btn" onClick={() => acceptAlert(alert)}>Accept</button>
-                </div>
-              </div>
-            ))
-          )}
+        <div className="admin-stat-card">
+          <div className="admin-stat-icon admin-stat-icon--volunteers">📋</div>
+          <div className="admin-stat-info">
+            <div className="admin-stat-value">{activityLog.length}</div>
+            <div className="admin-stat-label">Events Logged</div>
+          </div>
         </div>
-
-        <div className="card">
-          <h2>📋 Activity Log</h2>
-          {activityLog.map((log, i) => (
-            <div key={i} className="status-item">
-              <span className="status-message">{log.message}</span>
-              <span className="status-time">{log.time}</span>
-            </div>
-          ))}
+        <div className="admin-stat-card">
+          <div className="admin-stat-icon admin-stat-icon--users">📍</div>
+          <div className="admin-stat-info">
+            <div className="admin-stat-value">{activeDistance ? `${activeDistance}km` : "—"}</div>
+            <div className="admin-stat-label">Distance to Victim</div>
+          </div>
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: "20px" }}>
-        <h2>Live Alert Map</h2>
-        <div id="liveMap" ref={mapRef} style={{ height: "360px", borderRadius: "12px" }}></div>
+      {/* ===== LIVE AI MONITOR — only when an alert is active ===== */}
+      {(liveAlerts.length > 0 || activeDistance !== null) && liveAI && (
+        <div className="card admin-ai-card">
+          <div className="admin-ai-header">
+            <div className="admin-ai-title-row">
+              <span className="admin-ai-beacon"></span>
+              <h2>🧠 LIVE AI MONITOR</h2>
+            </div>
+            <span className="status-badge status-badge--danger">ANALYZING</span>
+          </div>
+
+          <div className="admin-ai-body">
+            {/* Transcript */}
+            <div className="admin-ai-transcript">
+              <span className="admin-ai-mic">🎙️</span>
+              <span className="admin-ai-text">"{liveAI.text}"</span>
+            </div>
+
+            {/* Emotion + Intensity */}
+            <div className="admin-ai-emotion-row">
+              <div className="admin-ai-emotion-badge">
+                <span className="admin-ai-emoji">{getEmotionIcon(liveAI.emotion)}</span>
+                <div>
+                  <div className="admin-ai-emotion-label">{liveAI.emotion?.toUpperCase()}</div>
+                  <div className="admin-ai-intensity-text">
+                    {(liveAI.intensity * 100).toFixed(0)}% intensity
+                    {liveAI.keyword_triggered && <span className="admin-ai-keyword-flag">⚠️ keyword detected</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="admin-ai-bar-track">
+                <div
+                  className="admin-ai-bar-fill"
+                  style={{
+                    width: `${(liveAI.intensity * 100).toFixed(0)}%`,
+                    background: SEVERITY_COLORS[liveAI.severity]?.color || "#fff",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Severity */}
+            <div
+              className="admin-ai-severity"
+              style={{
+                background: SEVERITY_COLORS[liveAI.severity]?.bg,
+                color: SEVERITY_COLORS[liveAI.severity]?.color,
+                borderColor: SEVERITY_COLORS[liveAI.severity]?.border,
+                animation: liveAI.severity === "critical" ? "pulse-red 1s infinite" : "none",
+              }}
+            >
+              {liveAI.severity === "critical" && "🔴 "}
+              {liveAI.severity === "high" && "🟠 "}
+              {liveAI.severity === "medium" && "🟡 "}
+              {liveAI.severity === "low" && "🟢 "}
+              SEVERITY: {liveAI.severity?.toUpperCase()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== ALERTS + ACTIVITY LOG ===== */}
+      <div className="dashboard-grid">
+
+        {/* Live Alerts */}
+        <div className="card admin-section-card">
+          <div className="admin-section-header">
+            <h2>🚨 Incoming Alerts</h2>
+            <span className="admin-section-count">{liveAlerts.length}</span>
+          </div>
+          <div className="admin-section-body scrollable-feed">
+            {liveAlerts.length === 0 ? (
+              <div className="admin-empty-state">
+                <span className="admin-empty-icon">📡</span>
+                <p>{isOnline ? "No active alerts nearby. Stay on standby." : "Go online to receive alerts."}</p>
+              </div>
+            ) : (
+              liveAlerts.map((al) => {
+                const sev = getAlertSeverity(al);
+                const sevLevel = getSeverityLabel(sev);
+                const sevStyle = sevLevel ? SEVERITY_COLORS[sevLevel] : null;
+                return (
+                  <div key={al.id} className="vd-alert-card">
+                    <div className="vd-alert-top">
+                      <div className="vd-alert-left">
+                        <span className="admin-alert-pulse"></span>
+                        <div>
+                          <div className="vd-alert-title">🚨 Emergency Alert</div>
+                          <div className="vd-alert-meta">
+                            <span>📍 {al.distance} km away</span>
+                            {al.lat && <span> · {Number(al.lat).toFixed(3)}°N, {Number(al.lon).toFixed(3)}°E</span>}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Severity badge per alert */}
+                      {sevLevel && (
+                        <div
+                          className="vd-alert-severity"
+                          style={{
+                            background: sevStyle?.bg,
+                            color: sevStyle?.color,
+                            borderColor: sevStyle?.border,
+                            animation: sevLevel === "critical" ? "pulse-red 1.5s infinite" : "none",
+                          }}
+                        >
+                          {sevLevel === "critical" && "🔴 "}
+                          {sevLevel === "high" && "🟠 "}
+                          {sevLevel === "medium" && "🟡 "}
+                          {sevLevel === "low" && "🟢 "}
+                          {sevLevel.toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    {/* Emotion detail if available */}
+                    {sev && sev.emotion && (
+                      <div className="vd-alert-ai-strip">
+                        <span className="vd-ai-strip-emoji">{getEmotionIcon(sev.emotion)}</span>
+                        <span className="vd-ai-strip-text">{sev.emotion?.toUpperCase()}</span>
+                        <div className="vd-ai-strip-bar">
+                          <div
+                            className="vd-ai-strip-fill"
+                            style={{
+                              width: `${(sev.intensity * 100).toFixed(0)}%`,
+                              background: sevStyle?.color || "#fff",
+                            }}
+                          />
+                        </div>
+                        <span className="vd-ai-strip-pct">{(sev.intensity * 100).toFixed(0)}%</span>
+                        {sev.keyword_triggered && <span className="vd-ai-strip-kw">⚠️</span>}
+                      </div>
+                    )}
+                    <button className="vd-accept-btn" onClick={() => acceptAlert(al)}>
+                      ✅ Accept & Respond
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Activity Log */}
+        <div className="card admin-section-card">
+          <div className="admin-section-header">
+            <h2>📋 Activity Log</h2>
+            <span className="admin-section-count admin-section-count--green">{activityLog.length}</span>
+          </div>
+          <div className="admin-section-body scrollable-feed">
+            {activityLog.length === 0 ? (
+              <div className="admin-empty-state">
+                <span className="admin-empty-icon">📝</span>
+                <p>Activity will appear here</p>
+              </div>
+            ) : (
+              activityLog.map((log, i) => (
+                <div key={i} className="status-item">
+                  <span className="status-message">{log.message}</span>
+                  <span className="status-time">{log.time}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== MAP ===== */}
+      <div className="card admin-map-card">
+        <div className="admin-section-header">
+          <h2>🗺️ Live Navigation Map</h2>
+          <div className="admin-map-legend">
+            <span className="admin-legend-item"><span className="admin-legend-dot admin-legend-dot--green"></span>You</span>
+            <span className="admin-legend-item"><span className="admin-legend-dot admin-legend-dot--red"></span>Victim</span>
+          </div>
+        </div>
+        <div id="liveMap" ref={mapRef}></div>
       </div>
     </div>
   );
