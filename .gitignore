@@ -8,7 +8,7 @@ server/.env
 .env
 
 # NLP model — 1GB file, GitHub pe nahi jayegi
-nlp-service/best_multitask_model.bin
+# nlp-service/best_multitask_model.bin
 nlp-service/__pycache__/
 nlp-service/*.pyc
 
