@@ -296,23 +296,49 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// // ===== NLP SEVERITY CLASSIFIER =====
+// // Calls the local Python FastAPI service (main.py) which runs your
+// // trained XLM-RoBERTa model. Returns severity + emotion + intensity.
+// // If the service is down, fails silently so the SOS alert still works.
+// async function classifyTranscript(text) {
+//   try {
+//     const res = await fetch("http://localhost:8000/classify", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ text }),
+//     });
+//     return await res.json();
+//   } catch (err) {
+//     console.warn("⚠️ NLP service unavailable:", err.message);
+//     return null;
+//   }
+// }
+
 // ===== NLP SEVERITY CLASSIFIER =====
-// Calls the local Python FastAPI service (main.py) which runs your
-// trained XLM-RoBERTa model. Returns severity + emotion + intensity.
-// If the service is down, fails silently so the SOS alert still works.
+const NLP_SERVICE_URL = process.env.NLP_SERVICE_URL || "http://localhost:8000/classify";
+
 async function classifyTranscript(text) {
   try {
-    const res = await fetch("http://localhost:8000/classify", {
+    const res = await fetch(NLP_SERVICE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
     });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(`⚠️ NLP service responded ${res.status}: ${body.slice(0, 200)}`);
+      return null;
+    }
+
     return await res.json();
   } catch (err) {
-    console.warn("⚠️ NLP service unavailable:", err.message);
+    console.warn(`⚠️ NLP service unreachable at ${NLP_SERVICE_URL}:`, err.message);
     return null;
   }
 }
+
+
 
 // ===== SOCKET.IO =====
 io.on("connection", (socket) => {
@@ -397,8 +423,16 @@ io.on("connection", (socket) => {
     if (!text || !text.trim()) return;
 
     console.log(`🎙️ Transcript chunk received: "${text}"`);
+    // const result = await classifyTranscript(text);
+    // if (!result) return;
+
     const result = await classifyTranscript(text);
-    if (!result) return;
+    if (!result) {
+      console.warn("🧠 No severity update emitted — NLP classification failed for this chunk.");
+      return;
+    }
+
+    // ===== KEYWORD SAFETY NET =====
 
     // ===== KEYWORD SAFETY NET =====
     // Agar model galat emotion classify kare (e.g. "help me" → joy),
