@@ -1,13 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { apiFetch } from "../api/fetch";
+
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 export default function EvidenceViewer() {
   const { token, user } = useSelector((state) => state.auth);
   const [evidence, setEvidence] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef(null);
+  // Track blob URLs to revoke them
+  const prevBlobUrl = useRef(null);
 
   useEffect(() => {
     const load = async () => {
@@ -27,6 +34,43 @@ export default function EvidenceViewer() {
     if (token) load();
   }, [token]);
 
+  // Fetch video as blob when selected changes — works across origins
+  const loadVideo = useCallback(async (item) => {
+    if (!item) { setVideoUrl(null); return; }
+    setVideoLoading(true);
+    setVideoError(false);
+    // Revoke previous blob
+    if (prevBlobUrl.current) {
+      URL.revokeObjectURL(prevBlobUrl.current);
+      prevBlobUrl.current = null;
+    }
+    try {
+      const res = await apiFetch(`/api/evidence/${item._id}/file`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      prevBlobUrl.current = url;
+      setVideoUrl(url);
+    } catch (err) {
+      console.warn("Video load failed:", err);
+      setVideoError(true);
+      setVideoUrl(null);
+    } finally {
+      setVideoLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    loadVideo(selected);
+    return () => {
+      if (prevBlobUrl.current) {
+        URL.revokeObjectURL(prevBlobUrl.current);
+      }
+    };
+  }, [selected, loadVideo]);
+
   const handleDelete = async (id) => {
     if (!confirm("Delete this recording permanently?")) return;
     await apiFetch(`/api/evidence/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
@@ -38,11 +82,18 @@ export default function EvidenceViewer() {
   };
 
   const handleSelect = (item) => {
+    if (item._id === selected?._id) return;
     setSelected(item);
-    if (videoRef.current) {
-      videoRef.current.load();
-    }
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handlePrevNext = (dir) => {
+    if (!selected || evidence.length < 2) return;
+    const idx = evidence.findIndex((e) => e._id === selected._id);
+    const next = dir === "next"
+      ? evidence[(idx + 1) % evidence.length]
+      : evidence[(idx - 1 + evidence.length) % evidence.length];
+    setSelected(next);
   };
 
   const formatDate = (dateStr) => {
@@ -56,7 +107,7 @@ export default function EvidenceViewer() {
   };
 
   const formatCoords = (lat, lon) => {
-    if (!lat || !lon) return "Unknown location";
+    if (!lat || !lon) return null;
     return `${Number(lat).toFixed(4)}°N, ${Number(lon).toFixed(4)}°E`;
   };
 
@@ -73,6 +124,8 @@ export default function EvidenceViewer() {
     if (diffDays < 7) return `${diffDays}d ago`;
     return formatDate(dateStr);
   };
+
+  const currentIndex = selected ? evidence.findIndex((e) => e._id === selected._id) : -1;
 
   if (loading) {
     return (
@@ -120,14 +173,27 @@ export default function EvidenceViewer() {
           <div className="ev-player-col">
             <div className="ev-player-wrapper">
               <div className="ev-player-container">
-                <video
-                  ref={videoRef}
-                  key={selected?._id}
-                  src={selected ? `/api/evidence/${selected._id}/file?token=${token}` : ""}
-                  controls
-                  className="ev-video"
-                  playsInline
-                />
+                {videoLoading ? (
+                  <div className="ev-player-overlay">
+                    <div className="ev-loading-spinner"></div>
+                    <p>Loading recording...</p>
+                  </div>
+                ) : videoError ? (
+                  <div className="ev-player-overlay">
+                    <div className="ev-error-icon">⚠️</div>
+                    <p>Failed to load recording</p>
+                    <button className="ev-retry-btn" onClick={() => loadVideo(selected)}>Retry</button>
+                  </div>
+                ) : videoUrl ? (
+                  <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    controls
+                    autoPlay
+                    className="ev-video"
+                    playsInline
+                  />
+                ) : null}
               </div>
 
               {/* Player info bar */}
@@ -137,6 +203,9 @@ export default function EvidenceViewer() {
                     <h2 className="ev-player-title">
                       Evidence Recording
                       <span className="ev-player-id">#{selected._id?.slice(-6).toUpperCase()}</span>
+                      {evidence.length > 1 && (
+                        <span className="ev-player-pos">{currentIndex + 1} of {evidence.length}</span>
+                      )}
                     </h2>
                     <div className="ev-player-meta-row">
                       <span className="ev-meta-tag">
@@ -151,25 +220,33 @@ export default function EvidenceViewer() {
                         <span className="ev-meta-icon">🕐</span>
                         {formatTime(selected.recordedAt)}
                       </span>
-                      <span className="ev-meta-tag">
-                        <span className="ev-meta-icon">📍</span>
-                        {formatCoords(selected.lat, selected.lon)}
-                      </span>
+                      {formatCoords(selected.lat, selected.lon) && (
+                        <span className="ev-meta-tag">
+                          <span className="ev-meta-icon">📍</span>
+                          {formatCoords(selected.lat, selected.lon)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="ev-player-actions">
+                    {evidence.length > 1 && (
+                      <div className="ev-nav-btns">
+                        <button className="ev-nav-btn" onClick={() => handlePrevNext("prev")} title="Previous">◀</button>
+                        <button className="ev-nav-btn" onClick={() => handlePrevNext("next")} title="Next">▶</button>
+                      </div>
+                    )}
                     <a
-                      href={`/api/evidence/${selected._id}/file?token=${token}`}
-                      download
+                      href={videoUrl || "#"}
+                      download={`evidence-${selected._id?.slice(-6)}.webm`}
                       className="ev-action-btn ev-action-btn--download"
                     >
-                      ⬇️ Download
+                      ⬇ Download
                     </a>
                     <button
                       className="ev-action-btn ev-action-btn--delete"
                       onClick={() => handleDelete(selected._id)}
                     >
-                      🗑️ Delete
+                      🗑 Delete
                     </button>
                   </div>
                 </div>

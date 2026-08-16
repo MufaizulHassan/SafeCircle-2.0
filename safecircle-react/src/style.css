@@ -1,5 +1,5 @@
-/* ==========================================================================
-   SafeCircle 2.0 — Premium Dark Theme Stylesheet
+﻿/* ==========================================================================
+   SafeCircle 2.0 â€” Premium Dark Theme Stylesheet
    Clean, deduplicated, glassmorphism-based design system
    ========================================================================== */
 
@@ -565,7 +565,7 @@ body {
 }
 
 .status-section li::before {
-  content: '→';
+  content: 'â†’';
   position: absolute;
   left: 0;
   color: #ff6b81;
@@ -1092,7 +1092,7 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE — 768px
+   RESPONSIVE â€” 768px
    ========================================================================== */
 @media (max-width: 768px) {
   .mobile-menu-btn {
@@ -1153,7 +1153,7 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE — 480px
+   RESPONSIVE â€” 480px
    ========================================================================== */
 @media (max-width: 480px) {
   .top-bar {
@@ -1182,7 +1182,7 @@ body {
 }
 
 /* ==========================================================================
-   ADMIN DASHBOARD — Premium Command Center
+   ADMIN DASHBOARD â€” Premium Command Center
    ========================================================================== */
 
 /* Header */
@@ -1833,7 +1833,7 @@ body {
 }
 
 /* ==========================================================================
-   EVIDENCE VIEWER — Premium Player Experience
+   EVIDENCE VIEWER â€” Premium Player Experience
    ========================================================================== */
 
 /* Loading state */
@@ -1981,6 +1981,7 @@ body {
   width: 100%;
   background: #000;
   aspect-ratio: 16 / 9;
+  overflow: hidden;
 }
 
 .ev-video {
@@ -1989,6 +1990,46 @@ body {
   display: block;
   object-fit: contain;
   background: #000;
+}
+
+/* Player overlay (loading / error) */
+.ev-player-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 5;
+}
+
+.ev-player-overlay p {
+  color: #7a7f96;
+  font-size: 0.9rem;
+}
+
+.ev-error-icon {
+  font-size: 2.2rem;
+  opacity: 0.7;
+}
+
+.ev-retry-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ev-retry-btn:hover {
+  background: rgba(168, 85, 247, 0.22);
+  transform: translateY(-1px);
 }
 
 /* Player info section */
@@ -2030,6 +2071,16 @@ body {
   letter-spacing: 0.05em;
 }
 
+.ev-player-pos {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #7a7f96;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
 .ev-player-meta-row {
   display: flex;
   flex-wrap: wrap;
@@ -2058,6 +2109,7 @@ body {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .ev-action-btn {
@@ -2096,6 +2148,33 @@ body {
 .ev-action-btn--delete:hover {
   background: rgba(239, 68, 68, 0.18);
   transform: translateY(-1px);
+}
+
+/* Prev / Next navigation */
+.ev-nav-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.ev-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #9ca0b8;
+  font-size: 0.72rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ev-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* ===== SIDEBAR PLAYLIST ===== */
@@ -2275,6 +2354,7 @@ body {
 
   .ev-player-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .ev-action-btn {
@@ -2300,7 +2380,7 @@ body {
 }
 
 /* ==========================================================================
-   VOLUNTEER DASHBOARD — Premium Command Interface
+   VOLUNTEER DASHBOARD â€” Premium Command Interface
    ========================================================================== */
 
 /* Header card */
