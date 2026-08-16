@@ -1,4 +1,4 @@
-// import { useState, useEffect, useRef } from "react";
+﻿// import { useState, useEffect, useRef } from "react";
 // import L from "leaflet";
 // import "leaflet/dist/leaflet.css";
 // import { socket } from "../socket";
@@ -19,7 +19,7 @@
 //   const [activityLog, setActivityLog] = useState([]);
 //   const [liveAlerts, setLiveAlerts] = useState([]);
 //   const [activeDistance, setActiveDistance] = useState(null);
-//   // liveAI — latest NLP result. Replaces on every new chunk, never stacks.
+//   // liveAI â€” latest NLP result. Replaces on every new chunk, never stacks.
 //   // Only shown when an active alert exists.
 //   const [liveAI, setLiveAI] = useState(null);
 //   // Track severity per victim for per-alert badges
@@ -102,11 +102,11 @@
 
 //     socket.on("incoming-alert", (data) => {
 //       setLiveAlerts((prev) => [{ ...data, id: Date.now() }, ...prev]);
-//       addLog(`🚨 New alert received — ${data.distance} km away`);
+//       addLog(`ðŸš¨ New alert received â€” ${data.distance} km away`);
 //     });
 
 //     socket.on("sos-severity-update", (data) => {
-//       // Replace the liveAI state entirely — latest vocal replaces previous
+//       // Replace the liveAI state entirely â€” latest vocal replaces previous
 //       setLiveAI({
 //         text: data.text,
 //         emotion: data.emotion,
@@ -126,7 +126,7 @@
 //           },
 //         }));
 //       }
-//       addLog(`🧠 AI: ${data.emotion?.toUpperCase()} — ${data.severity?.toUpperCase()}`);
+//       addLog(`ðŸ§  AI: ${data.emotion?.toUpperCase()} â€” ${data.severity?.toUpperCase()}`);
 //     });
 
 //     socket.on("victim-location-update", (data) => {
@@ -137,7 +137,7 @@
 //       if (userLocation.current.lat) {
 //         setActiveDistance(haversineKm(data.lat, data.lon, userLocation.current.lat, userLocation.current.lon).toFixed(2));
 //       }
-//       addLog("📍 Victim location updated");
+//       addLog("ðŸ“ Victim location updated");
 //     });
 
 //     socket.on("admin-emergency-ended", () => {
@@ -164,13 +164,13 @@
 //     if (!userLocation.current.lat) { alert("Waiting for your location, try again in a moment."); return; }
 //     setIsOnline(true);
 //     socket.emit("volunteer-online", { name: volunteerName, lat: userLocation.current.lat, lon: userLocation.current.lon });
-//     addLog(`✅ You are now online as "${volunteerName}"`);
+//     addLog(`âœ… You are now online as "${volunteerName}"`);
 //   };
 
 //   const goOffline = () => {
 //     setIsOnline(false);
 //     socket.emit("volunteer-offline");
-//     addLog("🔴 You are now offline");
+//     addLog("ðŸ”´ You are now offline");
 //   };
 
 //   const acceptAlert = async (alert) => {
@@ -181,15 +181,15 @@
 //       lat: userLocation.current.lat,
 //       lon: userLocation.current.lon,
 //     });
-//     addLog(`🙋 You accepted an alert ${alert.distance} km away`);
+//     addLog(`ðŸ™‹ You accepted an alert ${alert.distance} km away`);
 //     setLiveAlerts((prev) => prev.filter((a) => a.id !== alert.id));
 //     setActiveDistance(alert.distance);
 
 //     if (mapInstance.current && alert.lat && alert.lon) {
 //       if (victimMarker.current) mapInstance.current.removeLayer(victimMarker.current);
-//       victimMarker.current = L.marker([alert.lat, alert.lon]).addTo(mapInstance.current).bindPopup("🚨 Victim location");
+//       victimMarker.current = L.marker([alert.lat, alert.lon]).addTo(mapInstance.current).bindPopup("ðŸš¨ Victim location");
 //       await drawRoute(alert.lat, alert.lon);
-//       addLog("🗺️ Shortest route calculated to victim");
+//       addLog("ðŸ—ºï¸ Shortest route calculated to victim");
 //     }
 
 //     if (liveUpdateInterval.current) clearInterval(liveUpdateInterval.current);
@@ -213,16 +213,16 @@
 
 //   const getEmotionIcon = (emotion) => {
 //     switch (emotion) {
-//       case "fear": return "😨";
-//       case "anger": return "😡";
-//       case "sadness": return "😢";
-//       case "surprise": return "😲";
-//       case "joy": return "😊";
-//       default: return "❤️";
+//       case "fear": return "ðŸ˜¨";
+//       case "anger": return "ðŸ˜¡";
+//       case "sadness": return "ðŸ˜¢";
+//       case "surprise": return "ðŸ˜²";
+//       case "joy": return "ðŸ˜Š";
+//       default: return "â¤ï¸";
 //     }
 //   };
 
-//   // Get severity for a specific alert — per-victim if available, fallback to global liveAI
+//   // Get severity for a specific alert â€” per-victim if available, fallback to global liveAI
 //   const getAlertSeverity = (alert) => {
 //     if (alert.victimSocketId && alertSeverities[alert.victimSocketId]) {
 //       return alertSeverities[alert.victimSocketId];
@@ -243,13 +243,13 @@
 //         <div className="vd-header-top">
 //           <div className="vd-header-left">
 //             <div className="vd-header-icon">
-//               {isOnline ? "🟢" : "🔴"}
+//               {isOnline ? "ðŸŸ¢" : "ðŸ”´"}
 //             </div>
 //             <div>
 //               <h1 className="vd-title">Volunteer Dashboard</h1>
 //               <p className="vd-subtitle">
 //                 {isOnline
-//                   ? `Online as ${volunteerName} — receiving emergency alerts`
+//                   ? `Online as ${volunteerName} â€” receiving emergency alerts`
 //                   : "Go online to start receiving emergency alerts near you"}
 //               </p>
 //             </div>
@@ -274,9 +274,9 @@
 //               />
 //             </div>
 //             {isOnline ? (
-//               <button className="go-offline-btn vd-toggle-btn" onClick={goOffline}>🔴 Go Offline</button>
+//               <button className="go-offline-btn vd-toggle-btn" onClick={goOffline}>ðŸ”´ Go Offline</button>
 //             ) : (
-//               <button className="go-online-btn vd-toggle-btn" onClick={goOnline}>🟢 Go Online</button>
+//               <button className="go-online-btn vd-toggle-btn" onClick={goOnline}>ðŸŸ¢ Go Online</button>
 //             )}
 //           </div>
 //         </div>
@@ -288,7 +288,7 @@
 //             <div className="vd-mission-info">
 //               <span className="vd-mission-label">ACTIVE MISSION</span>
 //               <span className="vd-mission-distance">
-//                 📍 Victim is <strong>{activeDistance} km</strong> away — updating live
+//                 ðŸ“ Victim is <strong>{activeDistance} km</strong> away â€” updating live
 //               </span>
 //             </div>
 //           </div>
@@ -298,35 +298,35 @@
 //       {/* ===== STAT CARDS ===== */}
 //       <div className="vd-stats-row">
 //         <div className="admin-stat-card">
-//           <div className="admin-stat-icon admin-stat-icon--alerts">🚨</div>
+//           <div className="admin-stat-icon admin-stat-icon--alerts">ðŸš¨</div>
 //           <div className="admin-stat-info">
 //             <div className="admin-stat-value">{liveAlerts.length}</div>
 //             <div className="admin-stat-label">Incoming Alerts</div>
 //           </div>
 //         </div>
 //         <div className="admin-stat-card">
-//           <div className="admin-stat-icon admin-stat-icon--volunteers">📋</div>
+//           <div className="admin-stat-icon admin-stat-icon--volunteers">ðŸ“‹</div>
 //           <div className="admin-stat-info">
 //             <div className="admin-stat-value">{activityLog.length}</div>
 //             <div className="admin-stat-label">Events Logged</div>
 //           </div>
 //         </div>
 //         <div className="admin-stat-card">
-//           <div className="admin-stat-icon admin-stat-icon--users">📍</div>
+//           <div className="admin-stat-icon admin-stat-icon--users">ðŸ“</div>
 //           <div className="admin-stat-info">
-//             <div className="admin-stat-value">{activeDistance ? `${activeDistance}km` : "—"}</div>
+//             <div className="admin-stat-value">{activeDistance ? `${activeDistance}km` : "â€”"}</div>
 //             <div className="admin-stat-label">Distance to Victim</div>
 //           </div>
 //         </div>
 //       </div>
 
-//       {/* ===== LIVE AI MONITOR — only when an alert is active ===== */}
+//       {/* ===== LIVE AI MONITOR â€” only when an alert is active ===== */}
 //       {(liveAlerts.length > 0 || activeDistance !== null) && liveAI && (
 //         <div className="card admin-ai-card">
 //           <div className="admin-ai-header">
 //             <div className="admin-ai-title-row">
 //               <span className="admin-ai-beacon"></span>
-//               <h2>🧠 LIVE AI MONITOR</h2>
+//               <h2>ðŸ§  LIVE AI MONITOR</h2>
 //             </div>
 //             <span className="status-badge status-badge--danger">ANALYZING</span>
 //           </div>
@@ -334,7 +334,7 @@
 //           <div className="admin-ai-body">
 //             {/* Transcript */}
 //             <div className="admin-ai-transcript">
-//               <span className="admin-ai-mic">🎙️</span>
+//               <span className="admin-ai-mic">ðŸŽ™ï¸</span>
 //               <span className="admin-ai-text">"{liveAI.text}"</span>
 //             </div>
 
@@ -346,7 +346,7 @@
 //                   <div className="admin-ai-emotion-label">{liveAI.emotion?.toUpperCase()}</div>
 //                   <div className="admin-ai-intensity-text">
 //                     {(liveAI.intensity * 100).toFixed(0)}% intensity
-//                     {liveAI.keyword_triggered && <span className="admin-ai-keyword-flag">⚠️ keyword detected</span>}
+//                     {liveAI.keyword_triggered && <span className="admin-ai-keyword-flag">âš ï¸ keyword detected</span>}
 //                   </div>
 //                 </div>
 //               </div>
@@ -371,10 +371,10 @@
 //                 animation: liveAI.severity === "critical" ? "pulse-red 1s infinite" : "none",
 //               }}
 //             >
-//               {liveAI.severity === "critical" && "🔴 "}
-//               {liveAI.severity === "high" && "🟠 "}
-//               {liveAI.severity === "medium" && "🟡 "}
-//               {liveAI.severity === "low" && "🟢 "}
+//               {liveAI.severity === "critical" && "ðŸ”´ "}
+//               {liveAI.severity === "high" && "ðŸŸ  "}
+//               {liveAI.severity === "medium" && "ðŸŸ¡ "}
+//               {liveAI.severity === "low" && "ðŸŸ¢ "}
 //               SEVERITY: {liveAI.severity?.toUpperCase()}
 //             </div>
 //           </div>
@@ -387,13 +387,13 @@
 //         {/* Live Alerts */}
 //         <div className="card admin-section-card">
 //           <div className="admin-section-header">
-//             <h2>🚨 Incoming Alerts</h2>
+//             <h2>ðŸš¨ Incoming Alerts</h2>
 //             <span className="admin-section-count">{liveAlerts.length}</span>
 //           </div>
 //           <div className="admin-section-body scrollable-feed">
 //             {liveAlerts.length === 0 ? (
 //               <div className="admin-empty-state">
-//                 <span className="admin-empty-icon">📡</span>
+//                 <span className="admin-empty-icon">ðŸ“¡</span>
 //                 <p>{isOnline ? "No active alerts nearby. Stay on standby." : "Go online to receive alerts."}</p>
 //               </div>
 //             ) : (
@@ -407,10 +407,10 @@
 //                       <div className="vd-alert-left">
 //                         <span className="admin-alert-pulse"></span>
 //                         <div>
-//                           <div className="vd-alert-title">🚨 Emergency Alert</div>
+//                           <div className="vd-alert-title">ðŸš¨ Emergency Alert</div>
 //                           <div className="vd-alert-meta">
-//                             <span>📍 {al.distance} km away</span>
-//                             {al.lat && <span> · {Number(al.lat).toFixed(3)}°N, {Number(al.lon).toFixed(3)}°E</span>}
+//                             <span>ðŸ“ {al.distance} km away</span>
+//                             {al.lat && <span> Â· {Number(al.lat).toFixed(3)}Â°N, {Number(al.lon).toFixed(3)}Â°E</span>}
 //                           </div>
 //                         </div>
 //                       </div>
@@ -425,10 +425,10 @@
 //                             animation: sevLevel === "critical" ? "pulse-red 1.5s infinite" : "none",
 //                           }}
 //                         >
-//                           {sevLevel === "critical" && "🔴 "}
-//                           {sevLevel === "high" && "🟠 "}
-//                           {sevLevel === "medium" && "🟡 "}
-//                           {sevLevel === "low" && "🟢 "}
+//                           {sevLevel === "critical" && "ðŸ”´ "}
+//                           {sevLevel === "high" && "ðŸŸ  "}
+//                           {sevLevel === "medium" && "ðŸŸ¡ "}
+//                           {sevLevel === "low" && "ðŸŸ¢ "}
 //                           {sevLevel.toUpperCase()}
 //                         </div>
 //                       )}
@@ -448,11 +448,11 @@
 //                           />
 //                         </div>
 //                         <span className="vd-ai-strip-pct">{(sev.intensity * 100).toFixed(0)}%</span>
-//                         {sev.keyword_triggered && <span className="vd-ai-strip-kw">⚠️</span>}
+//                         {sev.keyword_triggered && <span className="vd-ai-strip-kw">âš ï¸</span>}
 //                       </div>
 //                     )}
 //                     <button className="vd-accept-btn" onClick={() => acceptAlert(al)}>
-//                       ✅ Accept & Respond
+//                       âœ… Accept & Respond
 //                     </button>
 //                   </div>
 //                 );
@@ -464,13 +464,13 @@
 //         {/* Activity Log */}
 //         <div className="card admin-section-card">
 //           <div className="admin-section-header">
-//             <h2>📋 Activity Log</h2>
+//             <h2>ðŸ“‹ Activity Log</h2>
 //             <span className="admin-section-count admin-section-count--green">{activityLog.length}</span>
 //           </div>
 //           <div className="admin-section-body scrollable-feed">
 //             {activityLog.length === 0 ? (
 //               <div className="admin-empty-state">
-//                 <span className="admin-empty-icon">📝</span>
+//                 <span className="admin-empty-icon">ðŸ“</span>
 //                 <p>Activity will appear here</p>
 //               </div>
 //             ) : (
@@ -488,7 +488,7 @@
 //       {/* ===== MAP ===== */}
 //       <div className="card admin-map-card">
 //         <div className="admin-section-header">
-//           <h2>🗺️ Live Navigation Map</h2>
+//           <h2>ðŸ—ºï¸ Live Navigation Map</h2>
 //           <div className="admin-map-legend">
 //             <span className="admin-legend-item"><span className="admin-legend-dot admin-legend-dot--green"></span>You</span>
 //             <span className="admin-legend-item"><span className="admin-legend-dot admin-legend-dot--red"></span>Victim</span>
@@ -535,7 +535,7 @@ export default function VolunteerDashboard() {
   // These used to be useState here, which meant navigating to another
   // page (Evidence, Profile, etc.) unmounted this component and wiped
   // everything. Redux state lives outside the component tree, so it
-  // survives navigation — coming back here shows exactly what you left.
+  // survives navigation â€” coming back here shows exactly what you left.
   const {
     isOnline,
     volunteerName,
@@ -588,7 +588,7 @@ export default function VolunteerDashboard() {
 
   // ===== MAP INIT =====
   // The map itself (a Leaflet instance tied to a DOM node) can't survive
-  // unmount — that DOM node is gone. So we still recreate it on mount,
+  // unmount â€” that DOM node is gone. So we still recreate it on mount,
   // but now we redraw the victim marker from Redux's activeMission if
   // one exists, so an in-progress mission doesn't visually vanish just
   // because you navigated away and back.
@@ -602,7 +602,7 @@ export default function VolunteerDashboard() {
     if (activeMission?.lat && activeMission?.lon) {
       victimMarker.current = L.marker([activeMission.lat, activeMission.lon])
         .addTo(mapInstance.current)
-        .bindPopup("🚨 Victim location");
+        .bindPopup("ðŸš¨ Victim location");
     }
 
     return () => {
@@ -644,7 +644,7 @@ export default function VolunteerDashboard() {
 
     socket.on("incoming-alert", (data) => {
       dispatch(addLiveAlert({ ...data, id: Date.now() }));
-      addLog(`🚨 New alert received — ${data.distance} km away`);
+      addLog(`ðŸš¨ New alert received â€” ${data.distance} km away`);
     });
 
     socket.on("sos-severity-update", (data) => {
@@ -668,7 +668,7 @@ export default function VolunteerDashboard() {
           })
         );
       }
-      addLog(`🧠 AI: ${data.emotion?.toUpperCase()} — ${data.severity?.toUpperCase()}`);
+      addLog(`ðŸ§  AI: ${data.emotion?.toUpperCase()} â€” ${data.severity?.toUpperCase()}`);
     });
 
     socket.on("victim-location-update", (data) => {
@@ -688,7 +688,7 @@ export default function VolunteerDashboard() {
       if (victimSocketId.current) {
         dispatch(setActiveMission({ victimSocketId: victimSocketId.current, lat: data.lat, lon: data.lon }));
       }
-      addLog("📍 Victim location updated");
+      addLog("ðŸ“ Victim location updated");
     });
 
     socket.on("admin-emergency-ended", () => {
@@ -742,13 +742,13 @@ export default function VolunteerDashboard() {
     if (!userLocation.current.lat) { alert("Waiting for your location, try again in a moment."); return; }
     dispatch(setOnline(true));
     socket.emit("volunteer-online", { name: volunteerName, lat: userLocation.current.lat, lon: userLocation.current.lon });
-    addLog(`✅ You are now online as "${volunteerName}"`);
+    addLog(`âœ… You are now online as "${volunteerName}"`);
   };
 
   const goOffline = () => {
     dispatch(setOnline(false));
     socket.emit("volunteer-offline");
-    addLog("🔴 You are now offline");
+    addLog("ðŸ”´ You are now offline");
   };
 
   const acceptAlert = async (alert) => {
@@ -760,15 +760,15 @@ export default function VolunteerDashboard() {
       lat: userLocation.current.lat,
       lon: userLocation.current.lon,
     });
-    addLog(`🙋 You accepted an alert ${alert.distance} km away`);
+    addLog(`ðŸ™‹ You accepted an alert ${alert.distance} km away`);
     dispatch(removeLiveAlert(alert.id));
     dispatch(setActiveDistance(alert.distance));
 
     if (mapInstance.current && alert.lat && alert.lon) {
       if (victimMarker.current) mapInstance.current.removeLayer(victimMarker.current);
-      victimMarker.current = L.marker([alert.lat, alert.lon]).addTo(mapInstance.current).bindPopup("🚨 Victim location");
+      victimMarker.current = L.marker([alert.lat, alert.lon]).addTo(mapInstance.current).bindPopup("ðŸš¨ Victim location");
       await drawRoute(alert.lat, alert.lon);
-      addLog("🗺️ Shortest route calculated to victim");
+      addLog("ðŸ—ºï¸ Shortest route calculated to victim");
     }
 
     if (liveUpdateInterval.current) clearInterval(liveUpdateInterval.current);
@@ -792,12 +792,12 @@ export default function VolunteerDashboard() {
 
   const getEmotionIcon = (emotion) => {
     switch (emotion) {
-      case "fear": return "😨";
-      case "anger": return "😡";
-      case "sadness": return "😢";
-      case "surprise": return "😲";
-      case "joy": return "😊";
-      default: return "❤️";
+      case "fear": return "ðŸ˜¨";
+      case "anger": return "ðŸ˜¡";
+      case "sadness": return "ðŸ˜¢";
+      case "surprise": return "ðŸ˜²";
+      case "joy": return "ðŸ˜Š";
+      default: return "â¤ï¸";
     }
   };
 
@@ -817,24 +817,24 @@ export default function VolunteerDashboard() {
     <div className="home-page vd-page">
 
       {/* ===== HEADER CARD ===== */}
-      <div className="card vd-header-card">
+      <div className={`card vd-header-card ${isOnline ? "vd-header-card--online" : ""}`}>
         <div className="vd-header-top">
           <div className="vd-header-left">
-            <div className="vd-header-icon">
-              {isOnline ? "🟢" : "🔴"}
+            <div className={`vd-header-icon ${isOnline ? "vd-header-icon--online" : ""}`}>
+              {isOnline ? "âš¡" : "ðŸ›¡ï¸"}
             </div>
             <div>
-              <h1 className="vd-title">Volunteer Dashboard</h1>
+              <h1 className="vd-title">Volunteer Command</h1>
               <p className="vd-subtitle">
                 {isOnline
-                  ? `Online as ${volunteerName} — receiving emergency alerts`
+                  ? `Responding as ${volunteerName} Â· receiving emergency alerts`
                   : "Go online to start receiving emergency alerts near you"}
               </p>
             </div>
           </div>
           <div className={`vd-status-pill ${isOnline ? "vd-status-pill--online" : "vd-status-pill--offline"}`}>
             <span className="vd-status-dot"></span>
-            {isOnline ? "ONLINE" : "OFFLINE"}
+            {isOnline ? "LIVE" : "OFFLINE"}
           </div>
         </div>
 
@@ -843,19 +843,30 @@ export default function VolunteerDashboard() {
           <div className="vd-name-row">
             <div className="vd-input-group">
               <label className="vd-label">Your Name</label>
-              <input
-                className="vd-input"
-                value={volunteerName}
-                onChange={(e) => dispatch(setVolunteerName(e.target.value))}
-                placeholder="Enter your name to go online"
-                disabled={isOnline}
-              />
+              <div className="vd-input-wrapper">
+                <span className="vd-input-icon">ðŸ‘¤</span>
+                <input
+                  className="vd-input"
+                  value={volunteerName}
+                  onChange={(e) => dispatch(setVolunteerName(e.target.value))}
+                  placeholder="Enter your name to go online"
+                  disabled={isOnline}
+                />
+              </div>
             </div>
-            {isOnline ? (
-              <button className="go-offline-btn vd-toggle-btn" onClick={goOffline}>🔴 Go Offline</button>
-            ) : (
-              <button className="go-online-btn vd-toggle-btn" onClick={goOnline}>🟢 Go Online</button>
-            )}
+            <div className="vd-toggle-wrapper">
+              {isOnline ? (
+                <button className="vd-power-btn vd-power-btn--off" onClick={goOffline}>
+                  <span className="vd-power-icon">â»</span>
+                  <span>Go Offline</span>
+                </button>
+              ) : (
+                <button className="vd-power-btn vd-power-btn--on" onClick={goOnline}>
+                  <span className="vd-power-icon">â»</span>
+                  <span>Go Online</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -866,57 +877,56 @@ export default function VolunteerDashboard() {
             <div className="vd-mission-info">
               <span className="vd-mission-label">ACTIVE MISSION</span>
               <span className="vd-mission-distance">
-                📍 Victim is <strong>{activeDistance} km</strong> away — updating live
+                ðŸ“ Victim is <strong>{activeDistance} km</strong> away â€” updating live
               </span>
             </div>
+            <span className="vd-mission-badge">RESPONDING</span>
           </div>
         )}
       </div>
 
       {/* ===== STAT CARDS ===== */}
       <div className="vd-stats-row">
-        <div className="admin-stat-card">
-          <div className="admin-stat-icon admin-stat-icon--alerts">🚨</div>
+        <div className={`admin-stat-card ${liveAlerts.length > 0 ? "vd-stat-card--pulse" : ""}`}>
+          <div className="admin-stat-icon admin-stat-icon--alerts">ðŸš¨</div>
           <div className="admin-stat-info">
             <div className="admin-stat-value">{liveAlerts.length}</div>
             <div className="admin-stat-label">Incoming Alerts</div>
           </div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-icon admin-stat-icon--volunteers">📋</div>
+          <div className="admin-stat-icon admin-stat-icon--volunteers">ðŸ“‹</div>
           <div className="admin-stat-info">
             <div className="admin-stat-value">{activityLog.length}</div>
             <div className="admin-stat-label">Events Logged</div>
           </div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-icon admin-stat-icon--users">📍</div>
+          <div className="admin-stat-icon admin-stat-icon--users">ðŸ“</div>
           <div className="admin-stat-info">
-            <div className="admin-stat-value">{activeDistance ? `${activeDistance}km` : "—"}</div>
+            <div className="admin-stat-value">{activeDistance ? `${activeDistance}km` : "â€”"}</div>
             <div className="admin-stat-label">Distance to Victim</div>
           </div>
         </div>
       </div>
 
-      {/* ===== LIVE AI MONITOR — only when an alert is active ===== */}
+      {/* ===== LIVE AI MONITOR â€” only when an alert is active ===== */}
       {(liveAlerts.length > 0 || activeDistance !== null) && liveAI && (
         <div className="card admin-ai-card">
           <div className="admin-ai-header">
             <div className="admin-ai-title-row">
               <span className="admin-ai-beacon"></span>
-              <h2>🧠 LIVE AI MONITOR</h2>
+              <h2>ðŸ§  LIVE AI MONITOR</h2>
             </div>
             <span className="status-badge status-badge--danger">ANALYZING</span>
           </div>
 
           <div className="admin-ai-body">
-            {/* Transcript */}
             <div className="admin-ai-transcript">
-              <span className="admin-ai-mic">🎙️</span>
+              <span className="admin-ai-mic">ðŸŽ™ï¸</span>
               <span className="admin-ai-text">"{liveAI.text}"</span>
             </div>
 
-            {/* Emotion + Intensity */}
             <div className="admin-ai-emotion-row">
               <div className="admin-ai-emotion-badge">
                 <span className="admin-ai-emoji">{getEmotionIcon(liveAI.emotion)}</span>
@@ -924,7 +934,7 @@ export default function VolunteerDashboard() {
                   <div className="admin-ai-emotion-label">{liveAI.emotion?.toUpperCase()}</div>
                   <div className="admin-ai-intensity-text">
                     {(liveAI.intensity * 100).toFixed(0)}% intensity
-                    {liveAI.keyword_triggered && <span className="admin-ai-keyword-flag">⚠️ keyword detected</span>}
+                    {liveAI.keyword_triggered && <span className="admin-ai-keyword-flag">âš ï¸ keyword detected</span>}
                   </div>
                 </div>
               </div>
@@ -939,7 +949,6 @@ export default function VolunteerDashboard() {
               </div>
             </div>
 
-            {/* Severity */}
             <div
               className="admin-ai-severity"
               style={{
@@ -949,10 +958,10 @@ export default function VolunteerDashboard() {
                 animation: liveAI.severity === "critical" ? "pulse-red 1s infinite" : "none",
               }}
             >
-              {liveAI.severity === "critical" && "🔴 "}
-              {liveAI.severity === "high" && "🟠 "}
-              {liveAI.severity === "medium" && "🟡 "}
-              {liveAI.severity === "low" && "🟢 "}
+              {liveAI.severity === "critical" && "ðŸ”´ "}
+              {liveAI.severity === "high" && "ðŸŸ  "}
+              {liveAI.severity === "medium" && "ðŸŸ¡ "}
+              {liveAI.severity === "low" && "ðŸŸ¢ "}
               SEVERITY: {liveAI.severity?.toUpperCase()}
             </div>
           </div>
@@ -965,13 +974,13 @@ export default function VolunteerDashboard() {
         {/* Live Alerts */}
         <div className="card admin-section-card">
           <div className="admin-section-header">
-            <h2>🚨 Incoming Alerts</h2>
+            <h2>ðŸš¨ Incoming Alerts</h2>
             <span className="admin-section-count">{liveAlerts.length}</span>
           </div>
           <div className="admin-section-body scrollable-feed">
             {liveAlerts.length === 0 ? (
               <div className="admin-empty-state">
-                <span className="admin-empty-icon">📡</span>
+                <span className="admin-empty-icon">{isOnline ? "ðŸ“¡" : "ðŸ”Œ"}</span>
                 <p>{isOnline ? "No active alerts nearby. Stay on standby." : "Go online to receive alerts."}</p>
               </div>
             ) : (
@@ -985,14 +994,13 @@ export default function VolunteerDashboard() {
                       <div className="vd-alert-left">
                         <span className="admin-alert-pulse"></span>
                         <div>
-                          <div className="vd-alert-title">🚨 Emergency Alert</div>
+                          <div className="vd-alert-title">ðŸš¨ Emergency Alert</div>
                           <div className="vd-alert-meta">
-                            <span>📍 {al.distance} km away</span>
-                            {al.lat && <span> · {Number(al.lat).toFixed(3)}°N, {Number(al.lon).toFixed(3)}°E</span>}
+                            <span>ðŸ“ {al.distance} km away</span>
+                            {al.lat && <span> Â· {Number(al.lat).toFixed(3)}Â°N, {Number(al.lon).toFixed(3)}Â°E</span>}
                           </div>
                         </div>
                       </div>
-                      {/* Severity badge per alert */}
                       {sevLevel && (
                         <div
                           className="vd-alert-severity"
@@ -1003,15 +1011,14 @@ export default function VolunteerDashboard() {
                             animation: sevLevel === "critical" ? "pulse-red 1.5s infinite" : "none",
                           }}
                         >
-                          {sevLevel === "critical" && "🔴 "}
-                          {sevLevel === "high" && "🟠 "}
-                          {sevLevel === "medium" && "🟡 "}
-                          {sevLevel === "low" && "🟢 "}
+                          {sevLevel === "critical" && "ðŸ”´ "}
+                          {sevLevel === "high" && "ðŸŸ  "}
+                          {sevLevel === "medium" && "ðŸŸ¡ "}
+                          {sevLevel === "low" && "ðŸŸ¢ "}
                           {sevLevel.toUpperCase()}
                         </div>
                       )}
                     </div>
-                    {/* Emotion detail if available */}
                     {sev && sev.emotion && (
                       <div className="vd-alert-ai-strip">
                         <span className="vd-ai-strip-emoji">{getEmotionIcon(sev.emotion)}</span>
@@ -1026,11 +1033,11 @@ export default function VolunteerDashboard() {
                           />
                         </div>
                         <span className="vd-ai-strip-pct">{(sev.intensity * 100).toFixed(0)}%</span>
-                        {sev.keyword_triggered && <span className="vd-ai-strip-kw">⚠️</span>}
+                        {sev.keyword_triggered && <span className="vd-ai-strip-kw">âš ï¸</span>}
                       </div>
                     )}
                     <button className="vd-accept-btn" onClick={() => acceptAlert(al)}>
-                      ✅ Accept & Respond
+                      âœ… Accept & Respond
                     </button>
                   </div>
                 );
@@ -1042,20 +1049,21 @@ export default function VolunteerDashboard() {
         {/* Activity Log */}
         <div className="card admin-section-card">
           <div className="admin-section-header">
-            <h2>📋 Activity Log</h2>
+            <h2>ðŸ“‹ Activity Log</h2>
             <span className="admin-section-count admin-section-count--green">{activityLog.length}</span>
           </div>
           <div className="admin-section-body scrollable-feed">
             {activityLog.length === 0 ? (
               <div className="admin-empty-state">
-                <span className="admin-empty-icon">📝</span>
+                <span className="admin-empty-icon">ðŸ“</span>
                 <p>Activity will appear here</p>
               </div>
             ) : (
               activityLog.map((log, i) => (
-                <div key={i} className="status-item">
-                  <span className="status-message">{log.message}</span>
-                  <span className="status-time">{log.time}</span>
+                <div key={i} className="vd-log-item">
+                  <span className="vd-log-dot"></span>
+                  <span className="vd-log-message">{log.message}</span>
+                  <span className="vd-log-time">{log.time}</span>
                 </div>
               ))
             )}
@@ -1066,7 +1074,7 @@ export default function VolunteerDashboard() {
       {/* ===== MAP ===== */}
       <div className="card admin-map-card">
         <div className="admin-section-header">
-          <h2>🗺️ Live Navigation Map</h2>
+          <h2>ðŸ—ºï¸ Live Navigation Map</h2>
           <div className="admin-map-legend">
             <span className="admin-legend-item"><span className="admin-legend-dot admin-legend-dot--green"></span>You</span>
             <span className="admin-legend-item"><span className="admin-legend-dot admin-legend-dot--red"></span>Victim</span>
@@ -1076,4 +1084,6 @@ export default function VolunteerDashboard() {
       </div>
     </div>
   );
+            <div>
 }
+

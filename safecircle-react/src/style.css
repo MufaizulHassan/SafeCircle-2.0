@@ -1,5 +1,5 @@
 ﻿/* ==========================================================================
-   SafeCircle 2.0 â€” Premium Dark Theme Stylesheet
+   SafeCircle 2.0 Ã¢â‚¬â€ Premium Dark Theme Stylesheet
    Clean, deduplicated, glassmorphism-based design system
    ========================================================================== */
 
@@ -565,7 +565,7 @@ body {
 }
 
 .status-section li::before {
-  content: 'â†’';
+  content: 'Ã¢â€ â€™';
   position: absolute;
   left: 0;
   color: #ff6b81;
@@ -1092,7 +1092,7 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE â€” 768px
+   RESPONSIVE Ã¢â‚¬â€ 768px
    ========================================================================== */
 @media (max-width: 768px) {
   .mobile-menu-btn {
@@ -1153,7 +1153,7 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE â€” 480px
+   RESPONSIVE Ã¢â‚¬â€ 480px
    ========================================================================== */
 @media (max-width: 480px) {
   .top-bar {
@@ -1182,7 +1182,7 @@ body {
 }
 
 /* ==========================================================================
-   ADMIN DASHBOARD â€” Premium Command Center
+   ADMIN DASHBOARD Ã¢â‚¬â€ Premium Command Center
    ========================================================================== */
 
 /* Header */
@@ -1833,7 +1833,7 @@ body {
 }
 
 /* ==========================================================================
-   EVIDENCE VIEWER â€” Premium Player Experience
+   EVIDENCE VIEWER Ã¢â‚¬â€ Premium Player Experience
    ========================================================================== */
 
 /* Loading state */
@@ -2380,7 +2380,7 @@ body {
 }
 
 /* ==========================================================================
-   VOLUNTEER DASHBOARD â€” Premium Command Interface
+   VOLUNTEER DASHBOARD Ã¢â‚¬â€ Premium Command Interface
    ========================================================================== */
 
 /* Header card */
@@ -2695,6 +2695,144 @@ body {
   box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
 }
 
+/* ===== POWER BUTTON ===== */
+.vd-toggle-wrapper {
+  flex-shrink: 0;
+}
+
+.vd-power-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.vd-power-btn--on {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.vd-power-btn--on:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.45), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.vd-power-btn--off {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.vd-power-btn--off:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+}
+
+.vd-power-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Input wrapper with icon */
+.vd-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vd-input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 0.9rem;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.vd-input-wrapper .vd-input {
+  padding-left: 38px;
+}
+
+/* Online state visual */
+.vd-header-card--online {
+  border-left-color: #22c55e;
+}
+
+.vd-header-icon--online {
+  background: rgba(34, 197, 94, 0.15);
+  animation: subtleFloat 3s ease-in-out infinite;
+}
+
+/* Mission badge */
+.vd-mission-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 4px 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  animation: pulse-red 2s infinite;
+}
+
+/* Pulsing stat card when alerts arrive */
+.vd-stat-card--pulse {
+  border-color: rgba(239, 68, 68, 0.25);
+  animation: pulse-red 2s infinite;
+}
+
+/* ===== ACTIVITY LOG ITEMS ===== */
+.vd-log-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.vd-log-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.vd-log-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3b82f6;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.vd-log-message {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #c0c4d6;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vd-log-time {
+  font-size: 0.72rem;
+  color: #5a5e72;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
 /* ===== VOLUNTEER DASHBOARD RESPONSIVE ===== */
 @media (max-width: 768px) {
   .vd-header-top {
@@ -2707,8 +2845,9 @@ body {
     align-items: stretch;
   }
 
-  .vd-toggle-btn {
+  .vd-power-btn {
     width: 100%;
+    justify-content: center;
   }
 
   .vd-stats-row {
@@ -2717,6 +2856,10 @@ body {
 
   .vd-alert-top {
     flex-direction: column;
+  }
+
+  .vd-active-mission {
+    flex-wrap: wrap;
   }
 }
 
