@@ -83,7 +83,7 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email, name: user.name },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     res.json({
@@ -122,7 +122,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email, name: user.name },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     res.json({
@@ -163,7 +163,7 @@ router.put("/update-profile", protect, async (req, res) => {
     const newToken = jwt.sign(
       { id: updatedUser._id, email: updatedUser.email, name: updatedUser.name },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     res.json({
