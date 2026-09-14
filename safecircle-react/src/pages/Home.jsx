@@ -454,6 +454,33 @@ import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet default marker icon broken by bundler
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "/icons/marker-icon-red.png",
+  iconUrl: "/icons/marker-icon-red.png",
+  shadowUrl: "/icons/marker-shadow.png",
+});
+
+const userIcon = L.icon({
+  iconUrl: "/icons/marker-icon-red.png",
+  shadowUrl: "/icons/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const volunteerIcon = L.icon({
+  iconUrl: "/icons/marker-icon-green.png",
+  shadowUrl: "/icons/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 import { socket } from "../socket";
 import { apiFetch } from "../api/fetch";
 
@@ -535,7 +562,7 @@ export default function Home() {
         userLocation.current = { lat: latitude, lon: longitude };
         if (mapInstance.current) {
           if (!userMarker.current) {
-            userMarker.current = L.marker([latitude, longitude]).addTo(mapInstance.current).bindPopup("You are here");
+            userMarker.current = L.marker([latitude, longitude], { icon: userIcon }).addTo(mapInstance.current).bindPopup("You are here");
             mapInstance.current.setView([latitude, longitude], 14);
           } else {
             userMarker.current.setLatLng([latitude, longitude]);
@@ -562,7 +589,7 @@ export default function Home() {
       volunteerLocation.current = { lat: data.lat, lon: data.lon };
 
       if (mapInstance.current && data.lat && data.lon) {
-        volunteerMarker.current = L.marker([data.lat, data.lon]).addTo(mapInstance.current).bindPopup(data.volunteerName);
+        volunteerMarker.current = L.marker([data.lat, data.lon], { icon: volunteerIcon }).addTo(mapInstance.current).bindPopup(data.volunteerName);
         drawRoute(data.lat, data.lon);
         setDistanceRemaining(haversineKm(data.lat, data.lon, userLocation.current.lat, userLocation.current.lon).toFixed(2));
       }

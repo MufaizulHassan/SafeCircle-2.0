@@ -2,6 +2,33 @@ import { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet default marker icon broken by bundler
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "/icons/marker-icon-green.png",
+  iconUrl: "/icons/marker-icon-green.png",
+  shadowUrl: "/icons/marker-shadow.png",
+});
+
+const victimIcon = L.icon({
+  iconUrl: "/icons/marker-icon-red.png",
+  shadowUrl: "/icons/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const volunteerIcon = L.icon({
+  iconUrl: "/icons/marker-icon-green.png",
+  shadowUrl: "/icons/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 import { socket } from "../socket";
 import { apiFetch } from "../api/fetch";
 import {
@@ -91,7 +118,7 @@ export default function VolunteerDashboard() {
     }).addTo(mapInstance.current);
 
     if (activeMission?.lat && activeMission?.lon) {
-      victimMarker.current = L.marker([activeMission.lat, activeMission.lon])
+      victimMarker.current = L.marker([activeMission.lat, activeMission.lon], { icon: victimIcon })
         .addTo(mapInstance.current)
         .bindPopup("🚨 Victim location");
     }
@@ -111,7 +138,7 @@ export default function VolunteerDashboard() {
         userLocation.current = { lat: latitude, lon: longitude };
         if (mapInstance.current) {
           if (!userMarker.current) {
-            userMarker.current = L.marker([latitude, longitude])
+            userMarker.current = L.marker([latitude, longitude], { icon: volunteerIcon })
               .addTo(mapInstance.current)
               .bindPopup("Your Location");
             mapInstance.current.setView([latitude, longitude], 14);
@@ -264,7 +291,7 @@ export default function VolunteerDashboard() {
 
     if (mapInstance.current && alert.lat && alert.lon) {
       if (victimMarker.current) mapInstance.current.removeLayer(victimMarker.current);
-      victimMarker.current = L.marker([alert.lat, alert.lon])
+      victimMarker.current = L.marker([alert.lat, alert.lon], { icon: victimIcon })
         .addTo(mapInstance.current)
         .bindPopup("🚨 Victim location");
       await drawRoute(alert.lat, alert.lon);

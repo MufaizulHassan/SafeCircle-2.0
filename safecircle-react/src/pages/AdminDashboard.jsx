@@ -468,6 +468,24 @@ import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet default marker icon broken by bundler
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "/icons/marker-icon-red.png",
+  iconUrl: "/icons/marker-icon-red.png",
+  shadowUrl: "/icons/marker-shadow.png",
+});
+
+const alertIcon = L.icon({
+  iconUrl: "/icons/marker-icon-red.png",
+  shadowUrl: "/icons/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 import { socket } from "../socket";
 import { apiFetch } from "../api/fetch";
 import {
@@ -510,7 +528,7 @@ export default function AdminDashboard() {
     // just need to re-paint it onto the new map.
     alerts.forEach((data) => {
       if (data.lat && data.lon) {
-        const marker = L.marker([data.lat, data.lon])
+        const marker = L.marker([data.lat, data.lon], { icon: alertIcon })
           .addTo(mapInstance.current)
           .bindPopup(`🚨 Alert — ${data.notified} notified`);
         alertMarkers.current[data.id] = marker;
@@ -539,7 +557,7 @@ export default function AdminDashboard() {
       const id = Date.now();
       dispatch(addAlert({ ...data, id }));
       if (mapInstance.current) {
-        const marker = L.marker([data.lat, data.lon])
+        const marker = L.marker([data.lat, data.lon], { icon: alertIcon })
           .addTo(mapInstance.current)
           .bindPopup(`🚨 Alert — ${data.notified} notified`);
         alertMarkers.current[id] = marker;
