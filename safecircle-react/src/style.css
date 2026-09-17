@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    SafeCircle 2.0 Ã¢â‚¬â€ Premium Dark Theme Stylesheet
    Clean, deduplicated, glassmorphism-based design system
    ========================================================================== */
@@ -572,7 +572,7 @@ body {
 }
 
 .status-section li::before {
-  content: 'Ã¢â€ â€™';
+  content: '\2022';
   position: absolute;
   left: 0;
   color: #ff6b81;
