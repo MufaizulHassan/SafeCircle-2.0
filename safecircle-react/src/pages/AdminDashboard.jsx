@@ -486,7 +486,7 @@ const alertIcon = L.icon({
   shadowSize: [41, 41],
 });
 
-import { socket } from "../socket";
+import { socket, connectSocket } from "../socket";
 import { apiFetch } from "../api/fetch";
 import {
   addAlert,
@@ -551,6 +551,7 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
+    connectSocket();
     socket.emit("admin-online");
 
     socket.on("admin-new-alert", (data) => {

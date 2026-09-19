@@ -21,3 +21,13 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Archives
+*.zip
+
+# IDE
+.idea/
+.vscode/
+
+# Backup files
+*_backup.*

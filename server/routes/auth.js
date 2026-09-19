@@ -40,9 +40,6 @@ const transporter = nodemailer.createTransport({
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
 });
 
 // If a signup email matches ADMIN_EMAILS (comma-separated in .env),
@@ -57,9 +54,13 @@ function getInitialRole(email) {
 }
 
 // ===== SIGNUP =====
-router.post("/signup", async (req, res) => {
+router.post("/signup", authLimiter, async (req, res) => {
   try {
     const { name, email, phone, password, trustedContacts } = req.body;
+
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ success: false, message: 'Invalid input' });
+    }
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -105,9 +106,13 @@ router.post("/signup", async (req, res) => {
 });
 
 // ===== LOGIN =====
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ success: false, message: 'Invalid input' });
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -246,7 +251,7 @@ router.put("/users/:id/role", protect, requireRole("admin"), async (req, res) =>
 
 
 // ===== VERIFY PASSWORD =====
-router.post("/verify-password", protect, async (req, res) => {
+router.post("/verify-password", protect, authLimiter, async (req, res) => {
   try {
     const { password } = req.body;
 
@@ -301,11 +306,12 @@ router.post("/verify-password", protect, async (req, res) => {
 //   res.json({ success: true, message: "OTP sent (demo mode — check server console)" });
 // });
 
-router.post("/send-volunteer-otp", protect, async (req, res) => {
+router.post("/send-volunteer-otp", protect, otpLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ success: false, message: "Email required" });
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const crypto = require('crypto');
+  const otp = crypto.randomInt(100000, 1000000).toString();
   otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
   try {
@@ -326,7 +332,7 @@ router.post("/send-volunteer-otp", protect, async (req, res) => {
 
 
 // ===== VERIFY VOLUNTEER OTP =====
-router.post("/verify-volunteer-otp", protect, (req, res) => {
+router.post("/verify-volunteer-otp", protect, otpLimiter, (req, res) => {
   const { email, otp } = req.body;
   const record = otpStore[email];
 

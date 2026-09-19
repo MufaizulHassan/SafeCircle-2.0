@@ -481,7 +481,7 @@ const volunteerIcon = L.icon({
   shadowSize: [41, 41],
 });
 
-import { socket } from "../socket";
+import { socket, connectSocket } from "../socket";
 import { apiFetch } from "../api/fetch";
 
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -576,6 +576,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    connectSocket();
     socket.on("alert-confirmed", (data) => {
       setStatusMessage(`Emergency alert sent. ${data.notified} volunteer(s) notified.`);
       addSystemEvent(`🚨 Alert sent — ${data.notified} volunteer(s) notified`);

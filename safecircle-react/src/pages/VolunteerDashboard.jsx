@@ -29,7 +29,7 @@ const volunteerIcon = L.icon({
   shadowSize: [41, 41],
 });
 
-import { socket } from "../socket";
+import { socket, connectSocket } from "../socket";
 import { apiFetch } from "../api/fetch";
 import {
   setOnline,
@@ -158,6 +158,7 @@ export default function VolunteerDashboard() {
   }, []);
 
   useEffect(() => {
+    connectSocket();
     addLog("Connected to SafeCircle server");
 
     socket.on("incoming-alert", (data) => {

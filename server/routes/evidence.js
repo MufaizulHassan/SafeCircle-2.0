@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const Evidence = require("../models/Evidence");
 const { protect } = require("../middleware/auth");
 
@@ -63,6 +64,9 @@ router.get("/", protect, async (req, res) => {
 // ===== STREAM ONE VIDEO =====
 router.get("/:id/file", protect, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid ID");
+    }
     const item = await Evidence.findById(req.params.id);
     if (!item) return res.status(404).send("Not found");
 
@@ -82,6 +86,9 @@ router.get("/:id/file", protect, async (req, res) => {
 // ===== DELETE EVIDENCE =====
 router.delete("/:id", protect, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid ID" });
+    }
     const item = await Evidence.findById(req.params.id);
     if (!item) return res.status(404).json({ success: false, message: "Not found" });
 

@@ -242,6 +242,8 @@ require("dotenv").config();
 
 // fetch is built-in on Node 18+; for older versions fall back to node-fetch
 const fetch = globalThis.fetch ?? require("node-fetch");
+const jwt = require("jsonwebtoken");
+const User = require("./models/User");
 
 
 
@@ -261,6 +263,8 @@ connectDB();
 
 // ===== MIDDLEWARE =====
 app.use(express.json({ limit: "20mb" }));
+const mongoSanitize = require("express-mongo-sanitize");
+app.use(mongoSanitize());
 
 // ===== ROUTES =====
 const authRoutes = require("./routes/auth");
@@ -340,20 +344,38 @@ async function classifyTranscript(text) {
 
 
 
+// ===== SOCKET.IO AUTH MIDDLEWARE =====
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("Authentication required"));
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const freshUser = await User.findById(decoded.id).select("-password");
+    if (!freshUser) return next(new Error("User not found"));
+    socket.user = { id: freshUser._id.toString(), name: freshUser.name, email: freshUser.email, role: freshUser.role };
+    next();
+  } catch (err) {
+    next(new Error("Invalid or expired token"));
+  }
+});
+
 // ===== SOCKET.IO =====
 io.on("connection", (socket) => {
-  console.log("🔗 Connected:", socket.id);
+  console.log(`🔗 Connected: ${socket.id} (${socket.user.name}, ${socket.user.role})`);
 
   // IDENTIFY — joins a private room so we can push events to this exact user
   // (e.g. "your volunteer application was approved") regardless of which
   // page/socket they currently have open.
   socket.on("identify", (userId) => {
     if (!userId) return;
+    // Prevent room hijacking — users can only join their own room
+    if (userId !== socket.user.id) return;
     socket.join(`user:${userId}`);
   });
 
-  // ADMIN ONLINE
+  // ADMIN ONLINE — only admins can join the admin room
   socket.on("admin-online", () => {
+    if (socket.user.role !== "admin") return;
     socket.join("admins");
     console.log("👑 Admin connected:", socket.id);
     Object.values(connectedVolunteers).forEach((vol) => {
@@ -361,12 +383,15 @@ io.on("connection", (socket) => {
     });
   });
 
-  // VOLUNTEER ONLINE
+  // VOLUNTEER ONLINE — only volunteers/admins can go online
   socket.on("volunteer-online", (data) => {
-    connectedVolunteers[socket.id] = { ...data, socketId: socket.id };
-    console.log(`✅ Volunteer online: ${data.name}`);
+    if (socket.user.role !== "volunteer" && socket.user.role !== "admin") return;
+    // Bind identity from authenticated user, not client-supplied data
+    const volData = { ...data, name: socket.user.name, socketId: socket.id };
+    connectedVolunteers[socket.id] = volData;
+    console.log(`✅ Volunteer online: ${socket.user.name}`);
     io.to("admins").emit("admin-volunteer-online", {
-      ...data,
+      ...volData,
       socketId: socket.id
     });
   });
@@ -511,9 +536,9 @@ io.on("connection", (socket) => {
     }
   });
 
-  // EMERGENCY ENDED
+  // EMERGENCY ENDED — only the victim or an admin can end an emergency
   socket.on("emergency-ended", (data) => {
-    console.log("✅ Emergency ended by user");
+    console.log(`✅ Emergency ended by ${socket.user.name} (${socket.user.role})`);
     io.emit("emergency-stopped", { time: data.time });
     io.to("admins").emit("admin-emergency-ended", { time: data.time });
   });
