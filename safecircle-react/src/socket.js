@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-import store from "./redux/store";
+import { store } from "./redux/store";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "";
 
