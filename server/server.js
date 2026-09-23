@@ -263,8 +263,26 @@ connectDB();
 
 // ===== MIDDLEWARE =====
 app.use(express.json({ limit: "20mb" }));
-const mongoSanitize = require("express-mongo-sanitize");
-app.use(mongoSanitize());
+
+// express-mongo-sanitize is INCOMPATIBLE with Express 5 — it crashes on
+// req.query which is a read-only getter in Express 5. We use a lightweight
+// manual sanitizer instead that only touches req.body and req.params.
+function sanitizeMongo(obj) {
+  if (obj === null || typeof obj !== "object") return obj;
+  for (const key of Object.keys(obj)) {
+    if (key.startsWith("$") || key.includes(".")) {
+      delete obj[key];
+    } else if (typeof obj[key] === "object") {
+      sanitizeMongo(obj[key]);
+    }
+  }
+  return obj;
+}
+app.use((req, _res, next) => {
+  if (req.body) sanitizeMongo(req.body);
+  if (req.params) sanitizeMongo(req.params);
+  next();
+});
 
 // ===== ROUTES =====
 const authRoutes = require("./routes/auth");
