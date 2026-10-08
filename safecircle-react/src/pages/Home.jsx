@@ -517,6 +517,7 @@ export default function Home() {
   const recordedChunksRef = useRef([]);
   const recognitionRef = useRef(null);
   const keepListeningRef = useRef(false);
+  const emergencyIdRef = useRef(null);
 
   const addSystemEvent = (message) => {
     const time = new Date().toLocaleTimeString();
@@ -577,7 +578,18 @@ export default function Home() {
 
   useEffect(() => {
     connectSocket();
+    
+    socket.on("existing-emergency-restored", (data) => {
+      emergencyIdRef.current = data.emergencyId;
+      setAlertActive(true);
+      setStatusMessage("Existing emergency restored.");
+      addSystemEvent("⚠️ Reconnected to active emergency");
+      startRecording();
+      startTranscription();
+    });
+
     socket.on("alert-confirmed", (data) => {
+      if (data.emergencyId) emergencyIdRef.current = data.emergencyId;
       setStatusMessage(`Emergency alert sent. ${data.notified} volunteer(s) notified.`);
       addSystemEvent(`🚨 Alert sent — ${data.notified} volunteer(s) notified`);
     });
@@ -601,6 +613,7 @@ export default function Home() {
         if (volunteerSocketId.current && userLocation.current.lat) {
           socket.emit("victim-location-update", {
             volunteerSocketId: volunteerSocketId.current,
+            emergencyId: emergencyIdRef.current,
             lat: userLocation.current.lat,
             lon: userLocation.current.lon,
           });
@@ -628,6 +641,7 @@ export default function Home() {
       // Clear interval AND null it out so no stray location update fires
       clearInterval(liveUpdateInterval.current);
       liveUpdateInterval.current = null;
+      emergencyIdRef.current = null;
       volunteerSocketId.current = null;
       // Stop mic listening if emergency ended from outside (admin/volunteer side)
       stopTranscription();
@@ -755,6 +769,7 @@ export default function Home() {
         socket.emit("sos-transcript-chunk", {
           text,
           victimSocketId: socket.id,
+          emergencyId: emergencyIdRef.current,
         });
       }
     };
@@ -847,7 +862,7 @@ export default function Home() {
 
     stopRecording();
     stopTranscription();
-    socket.emit("emergency-ended", { time: new Date().toISOString() });
+    socket.emit("emergency-ended", { time: new Date().toISOString(), emergencyId: emergencyIdRef.current });
   };
 
   return (

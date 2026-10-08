@@ -241,6 +241,7 @@ export default function VolunteerDashboard() {
       liveUpdateInterval.current = setInterval(() => {
         if (victimSocketId.current && userLocation.current.lat) {
           socket.emit("volunteer-location-update", {
+            emergencyId: activeMission?.emergencyId,
             victimSocketId: victimSocketId.current,
             lat: userLocation.current.lat,
             lon: userLocation.current.lon,
@@ -278,9 +279,11 @@ export default function VolunteerDashboard() {
   const acceptAlert = async (alert) => {
     victimSocketId.current = alert.victimSocketId;
     dispatch(
-      setActiveMission({ victimSocketId: alert.victimSocketId, lat: alert.lat, lon: alert.lon })
+      setActiveMission({ victimSocketId: alert.victimSocketId, emergencyId: alert.emergencyId, lat: alert.lat, lon: alert.lon })
     );
+    victimSocketId.current = alert.victimSocketId; // Needed if using ref elsewhere
     socket.emit("volunteer-responding", {
+      emergencyId: alert.emergencyId,
       victimSocketId: alert.victimSocketId,
       volunteerName,
       lat: userLocation.current.lat,
@@ -303,6 +306,7 @@ export default function VolunteerDashboard() {
     liveUpdateInterval.current = setInterval(() => {
       if (victimSocketId.current && userLocation.current.lat) {
         socket.emit("volunteer-location-update", {
+          emergencyId: alert.emergencyId,
           victimSocketId: victimSocketId.current,
           lat: userLocation.current.lat,
           lon: userLocation.current.lon,

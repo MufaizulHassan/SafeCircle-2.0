@@ -50,6 +50,11 @@ const userSchema = new mongoose.Schema({
     enum: ["none", "pending"],
     default: "none",
   },
+  volunteerAvailability: {
+    type: String,
+    enum: ["AVAILABLE", "BUSY"],
+    default: "AVAILABLE",
+  },
   createdAt: {
     type: Date,
     default: Date.now

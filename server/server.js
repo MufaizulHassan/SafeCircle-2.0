@@ -244,6 +244,7 @@ require("dotenv").config();
 const fetch = globalThis.fetch ?? require("node-fetch");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
+const Emergency = require("./models/Emergency");
 
 
 
@@ -378,20 +379,77 @@ io.use(async (socket, next) => {
 });
 
 // ===== SOCKET.IO =====
+// FIND VOLUNTEERS HELPER (Phase 5)
+async function findVolunteers(emergencyId, io) {
+  const emergency = await Emergency.findById(emergencyId);
+  if (!emergency || emergency.status !== "SEARCHING") return;
+
+  const RADIUS_KM = emergency.currentRadius;
+  let notifiedCount = 0;
+
+  const eligibleVolunteers = [];
+  for (const volSocketId of Object.keys(connectedVolunteers)) {
+    const vol = connectedVolunteers[volSocketId];
+    if (vol.isBusy) continue;
+    if (emergency.notifiedVolunteerIds.includes(vol.userId)) continue;
+    
+    const dist = getDistance(emergency.lat, emergency.lon, vol.lat, vol.lon);
+    if (dist <= RADIUS_KM) {
+      eligibleVolunteers.push({ ...vol, distance: dist.toFixed(2) });
+    }
+  }
+
+  for (const vol of eligibleVolunteers) {
+    emergency.notifiedVolunteerIds.push(vol.userId);
+    emergency.responders.push({ userId: vol.userId, status: "PENDING" });
+    
+    io.to(vol.socketId).emit("incoming-alert", {
+      emergencyId: emergency._id.toString(),
+      victimSocketId: emergency.userId.toString(),
+      lat: emergency.lat,
+      lon: emergency.lon,
+      distance: vol.distance,
+      time: new Date()
+    });
+    notifiedCount++;
+    console.log(`📢 Notified: ${vol.name} (${vol.distance} km away)`);
+  }
+
+  await emergency.save();
+  
+  io.to(`emergency_${emergency._id}`).emit("alert-confirmed", { 
+    emergencyId: emergency._id.toString(),
+    notified: emergency.notifiedVolunteerIds.length 
+  });
+
+  setTimeout(async () => {
+    const em = await Emergency.findById(emergencyId);
+    if (!em || em.status !== "SEARCHING") return;
+    
+    const activeCount = em.responders.filter(r => r.status === "ACCEPTED").length;
+    if (activeCount < 5) {
+      if (em.currentRadius < 15) {
+        em.currentRadius += 5;
+        em.searchRound += 1;
+        await em.save();
+        console.log(`⏳ Timeout. Expanding radius to ${em.currentRadius}km for ${emergencyId}`);
+        findVolunteers(em._id, io);
+      } else {
+        console.log(`⏳ Timeout. Max radius reached for ${emergencyId}`);
+      }
+    }
+  }, 30000); // 30 seconds
+}
+
 io.on("connection", (socket) => {
   console.log(`🔗 Connected: ${socket.id} (${socket.user.name}, ${socket.user.role})`);
 
-  // IDENTIFY — joins a private room so we can push events to this exact user
-  // (e.g. "your volunteer application was approved") regardless of which
-  // page/socket they currently have open.
   socket.on("identify", (userId) => {
     if (!userId) return;
-    // Prevent room hijacking — users can only join their own room
     if (userId !== socket.user.id) return;
     socket.join(`user:${userId}`);
   });
 
-  // ADMIN ONLINE — only admins can join the admin room
   socket.on("admin-online", () => {
     if (socket.user.role !== "admin") return;
     socket.join("admins");
@@ -401,11 +459,19 @@ io.on("connection", (socket) => {
     });
   });
 
-  // VOLUNTEER ONLINE — only volunteers/admins can go online
-  socket.on("volunteer-online", (data) => {
+  socket.on("volunteer-online", async (data) => {
     if (socket.user.role !== "volunteer" && socket.user.role !== "admin") return;
-    // Bind identity from authenticated user, not client-supplied data
-    const volData = { ...data, name: socket.user.name, socketId: socket.id };
+    
+    const user = await User.findById(socket.user.id);
+    const isBusy = user ? user.volunteerAvailability === "BUSY" : false;
+
+    const volData = { 
+      ...data, 
+      name: socket.user.name, 
+      socketId: socket.id,
+      userId: socket.user.id,
+      isBusy 
+    };
     connectedVolunteers[socket.id] = volData;
     console.log(`✅ Volunteer online: ${socket.user.name}`);
     io.to("admins").emit("admin-volunteer-online", {
@@ -414,7 +480,6 @@ io.on("connection", (socket) => {
     });
   });
 
-  // VOLUNTEER OFFLINE — explicit "Go Offline" toggle (not a disconnect)
   function takeVolunteerOffline() {
     if (connectedVolunteers[socket.id]) {
       console.log(`🔴 Volunteer offline: ${connectedVolunteers[socket.id].name}`);
@@ -426,69 +491,58 @@ io.on("connection", (socket) => {
   }
   socket.on("volunteer-offline", takeVolunteerOffline);
 
-  // SOS ALERT
-  socket.on("sos-alert", (data) => {
+  socket.on("sos-alert", async (data) => {
     console.log("🚨 SOS ALERT received:", data);
-    const RADIUS_KM = 5;
-    let notified = 0;
-
-    Object.values(connectedVolunteers).forEach((vol) => {
-      const dist = getDistance(data.lat, data.lon, vol.lat, vol.lon);
-      if (dist <= RADIUS_KM) {
-        io.to(vol.socketId).emit("incoming-alert", {
-          victimSocketId: socket.id,
-          lat: data.lat,
-          lon: data.lon,
-          distance: dist.toFixed(2),
-          time: data.time
-        });
-        notified++;
-        console.log(`📢 Notified: ${vol.name} (${dist.toFixed(2)} km away)`);
-      }
+    
+    let emergency = await Emergency.findOne({ 
+      userId: socket.user.id, 
+      status: { $in: ["SEARCHING", "ACTIVE"] } 
     });
 
-    console.log(`Total volunteers notified: ${notified}`);
-    socket.emit("alert-confirmed", { notified });
-    io.to("admins").emit("admin-new-alert", {
-      lat: data.lat,
-      lon: data.lon,
-      time: data.time,
-      notified
-    });
-  });
-
-  // SOS TRANSCRIPT CHUNK — live speech from the victim during an alert.
-  // Each chunk (a sentence or phrase) gets classified by the NLP model,
-  // and the result is broadcast to volunteers + admins so they can see
-  // the severity escalate in real time as more speech comes in.
-  socket.on("sos-transcript-chunk", async (data) => {
-    const { text, victimSocketId } = data;
-    if (!text || !text.trim()) return;
-
-    console.log(`🎙️ Transcript chunk received: "${text}"`);
-    // const result = await classifyTranscript(text);
-    // if (!result) return;
-
-    const result = await classifyTranscript(text);
-    if (!result) {
-      console.warn("🧠 No severity update emitted — NLP classification failed for this chunk.");
+    if (emergency) {
+      console.log("⚠️ Existing active emergency found for user. Restoring session.");
+      socket.join(`emergency_${emergency._id}`);
+      socket.emit("existing-emergency-restored", { emergencyId: emergency._id.toString() });
       return;
     }
 
-    // ===== KEYWORD SAFETY NET =====
+    emergency = new Emergency({
+      userId: socket.user.id,
+      lat: data.lat,
+      lon: data.lon,
+      status: "SEARCHING",
+      currentRadius: 5
+    });
+    await emergency.save();
 
-    // ===== KEYWORD SAFETY NET =====
-    // Agar model galat emotion classify kare (e.g. "help me" → joy),
-    // yeh fallback ensure karta hai ki distress words pe severity
-    // kabhi bhi LOW nahi rahegi. Model primary hai, yeh backup hai.
+    socket.join(`emergency_${emergency._id}`);
+    socket.emit("alert-confirmed", { emergencyId: emergency._id.toString(), notified: 0 });
+    
+    io.to("admins").emit("admin-new-alert", {
+      emergencyId: emergency._id.toString(),
+      lat: data.lat,
+      lon: data.lon,
+      time: data.time || new Date().toISOString(),
+      notified: 0
+    });
+
+    findVolunteers(emergency._id, io);
+  });
+
+  socket.on("sos-transcript-chunk", async (data) => {
+    const { text, victimSocketId, emergencyId } = data;
+    if (!text || !text.trim()) return;
+
+    console.log(`🎙️ Transcript chunk received: "${text}"`);
+    // NOTE: assuming classifyTranscript exists
+    const result = await classifyTranscript(text);
+    if (!result) return;
+
     const DISTRESS_KEYWORDS = [
-      // English
       "help", "please", "scared", "fear", "danger", "run",
       "following", "hurry", "emergency", "stop", "leave me",
-      // Hindi / Hinglish
       "bachao", "darr", "madad", "chod", "ruk", "mat",
       "chhod", "bhago", "koi hai", "koi", "please",
-      // Arabic / French / Spanish (common distress)
       "ayuda", "socorro", "au secours", "aidez", "por favor",
       "hilfe", "aiuto", "pomoc",
     ];
@@ -496,17 +550,10 @@ io.on("connection", (socket) => {
     const lowerText = text.toLowerCase();
     const keywordHit = DISTRESS_KEYWORDS.some((kw) => lowerText.includes(kw));
 
-    // Severity order for comparison
     const SEVERITY_ORDER = { low: 0, medium: 1, high: 2, critical: 3 };
     const keywordSeverity = keywordHit ? "high" : "low";
-    const finalSeverity =
-      SEVERITY_ORDER[result.severity] >= SEVERITY_ORDER[keywordSeverity]
-        ? result.severity
-        : keywordSeverity;
-
-    if (keywordHit && finalSeverity !== result.severity) {
-      console.log(`🛡️ Safety net triggered: model said "${result.severity}" but keyword found → upgraded to "${finalSeverity}"`);
-    }
+    const finalSeverity = SEVERITY_ORDER[result.severity] >= SEVERITY_ORDER[keywordSeverity]
+        ? result.severity : keywordSeverity;
 
     const payload = {
       text,
@@ -516,55 +563,156 @@ io.on("connection", (socket) => {
       severity_score: result.severity_score,
       confidence_profile: result.confidence_profile,
       keyword_triggered: keywordHit && finalSeverity !== result.severity,
-      victimSocketId: victimSocketId || socket.id,
+      victimSocketId: victimSocketId || socket.user.id,
+      emergencyId,
       time: new Date().toISOString(),
     };
 
-    console.log(`🧠 NLP result: ${result.emotion} | model severity: ${result.severity} | final severity: ${finalSeverity} | intensity: ${result.intensity}`);
-
-    // Push to the victim themselves so their badge updates
-    socket.emit("sos-severity-update", payload);
-
-    // Push to all volunteers currently handling this alert and admin dashboard
-    Object.values(connectedVolunteers).forEach((vol) => {
-      io.to(vol.socketId).emit("sos-severity-update", payload);
-    });
+    if (emergencyId) {
+      io.to(`emergency_${emergencyId}`).emit("sos-severity-update", payload);
+    } else {
+      socket.emit("sos-severity-update", payload);
+      Object.values(connectedVolunteers).forEach((vol) => {
+        io.to(vol.socketId).emit("sos-severity-update", payload);
+      });
+    }
     io.to("admins").emit("sos-severity-update", payload);
   });
 
-  // VOLUNTEER RESPONDING — targeted to that specific victim only
-  socket.on("volunteer-responding", (data) => {
-    console.log(`🙋 ${data.volunteerName} is responding`);
-    io.to(data.victimSocketId).emit("volunteer-accepted", {
-      ...data,
+  socket.on("volunteer-responding", async (data) => {
+    console.log(`🙋 ${socket.user.name} is responding`);
+    
+    let emergency;
+    if (data.emergencyId) {
+       emergency = await Emergency.findById(data.emergencyId);
+    } else if (data.victimSocketId) {
+       emergency = await Emergency.findOne({ userId: data.victimSocketId, status: { $in: ["SEARCHING", "ACTIVE"] } });
+    }
+
+    if (!emergency || (emergency.status !== "SEARCHING" && emergency.status !== "ACTIVE")) {
+       socket.emit("emergency-error", { message: "Emergency is no longer active" });
+       return;
+    }
+
+    const activeCount = emergency.responders.filter(r => r.status === "ACCEPTED").length;
+    if (activeCount >= 5) {
+       socket.emit("emergency-error", { message: "Emergency already has enough responders" });
+       return;
+    }
+
+    let responder = emergency.responders.find(r => r.userId.toString() === socket.user.id);
+    if (responder) {
+       responder.status = "ACCEPTED";
+       responder.respondedAt = new Date();
+    } else {
+       emergency.responders.push({ userId: socket.user.id, status: "ACCEPTED", respondedAt: new Date() });
+    }
+
+    if (activeCount + 1 >= 5) {
+       emergency.status = "ACTIVE";
+    }
+
+    await emergency.save();
+
+    if (connectedVolunteers[socket.id]) {
+       connectedVolunteers[socket.id].isBusy = true;
+    }
+    await User.findByIdAndUpdate(socket.user.id, { volunteerAvailability: "BUSY" });
+
+    socket.join(`emergency_${emergency._id}`);
+
+    io.to(`emergency_${emergency._id}`).emit("volunteer-accepted", {
+      emergencyId: emergency._id.toString(),
+      volunteerName: socket.user.name,
       volunteerSocketId: socket.id,
+      lat: data.lat,
+      lon: data.lon,
     });
   });
 
-  // LIVE LOCATION RELAY — both sides ping each other every few seconds
-  socket.on("victim-location-update", (data) => {
-    if (data.volunteerSocketId) {
-      io.to(data.volunteerSocketId).emit("victim-location-update", { lat: data.lat, lon: data.lon });
+  socket.on("victim-location-update", async (data) => {
+    if (data.emergencyId) {
+       io.to(`emergency_${data.emergencyId}`).emit("victim-location-update", { lat: data.lat, lon: data.lon });
+    } else if (data.volunteerSocketId) {
+       io.to(data.volunteerSocketId).emit("victim-location-update", { lat: data.lat, lon: data.lon });
     }
   });
 
   socket.on("volunteer-location-update", (data) => {
-    if (data.victimSocketId) {
-      io.to(data.victimSocketId).emit("volunteer-location-update", { lat: data.lat, lon: data.lon });
+    if (data.emergencyId) {
+       io.to(`emergency_${data.emergencyId}`).emit("volunteer-location-update", { lat: data.lat, lon: data.lon });
+    } else if (data.victimSocketId) {
+       io.to(`user:${data.victimSocketId}`).emit("volunteer-location-update", { lat: data.lat, lon: data.lon });
     }
   });
 
-  // EMERGENCY ENDED — only the victim or an admin can end an emergency
-  socket.on("emergency-ended", (data) => {
+  socket.on("emergency-ended", async (data) => {
     console.log(`✅ Emergency ended by ${socket.user.name} (${socket.user.role})`);
-    io.emit("emergency-stopped", { time: data.time });
-    io.to("admins").emit("admin-emergency-ended", { time: data.time });
+    
+    let emergency;
+    if (data.emergencyId) {
+       emergency = await Emergency.findById(data.emergencyId);
+    } else {
+       emergency = await Emergency.findOne({ userId: socket.user.id, status: { $in: ["SEARCHING", "ACTIVE"] } });
+    }
+
+    if (!emergency) return;
+    
+    if (emergency.userId.toString() !== socket.user.id && socket.user.role !== "admin") {
+       return;
+    }
+
+    emergency.status = "COMPLETED";
+    emergency.completedAt = new Date();
+    
+    for (const resp of emergency.responders) {
+       if (resp.status === "ACCEPTED") {
+           await User.findByIdAndUpdate(resp.userId, { volunteerAvailability: "AVAILABLE" });
+           for (const vol of Object.values(connectedVolunteers)) {
+               if (vol.userId === resp.userId.toString()) {
+                   vol.isBusy = false;
+               }
+           }
+       }
+    }
+
+    await emergency.save();
+
+    io.to(`emergency_${emergency._id}`).emit("emergency-stopped", { time: data.time || new Date().toISOString(), emergencyId: emergency._id.toString() });
+    io.to("admins").emit("admin-emergency-ended", { time: data.time || new Date().toISOString(), emergencyId: emergency._id.toString() });
+
+    io.in(`emergency_${emergency._id}`).socketsLeave(`emergency_${emergency._id}`);
   });
 
-  // DISCONNECT
-  socket.on("disconnect", () => {
-    takeVolunteerOffline();
+  socket.on("disconnect", async () => {
     console.log("❌ Disconnected:", socket.id);
+    
+    if (connectedVolunteers[socket.id]) {
+      const vol = connectedVolunteers[socket.id];
+      if (vol.isBusy) {
+         const emergencies = await Emergency.find({ 
+           "responders.userId": vol.userId, 
+           "responders.status": "ACCEPTED",
+           status: { $in: ["SEARCHING", "ACTIVE"] }
+         });
+
+         for (const em of emergencies) {
+            const responder = em.responders.find(r => r.userId.toString() === vol.userId.toString());
+            if (responder) {
+                responder.status = "CANCELLED";
+            }
+            const activeCount = em.responders.filter(r => r.status === "ACCEPTED").length;
+            if (activeCount < 5 && em.status === "ACTIVE") {
+                em.status = "SEARCHING";
+                console.log(`⚠️ Volunteer dropped off. Resuming search for ${em._id}`);
+                findVolunteers(em._id, io);
+            }
+            await em.save();
+         }
+         await User.findByIdAndUpdate(vol.userId, { volunteerAvailability: "AVAILABLE" });
+      }
+      takeVolunteerOffline();
+    }
   });
 });
 
