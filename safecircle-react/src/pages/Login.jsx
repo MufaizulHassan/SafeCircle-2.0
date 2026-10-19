@@ -37,46 +37,87 @@ export default function Login() {
 
   return (
     <div className="auth-page">
+      <div className="auth-backdrop-glow"></div>
       <form className="auth-card" onSubmit={handleSubmit}>
-        <h1 className="auth-title">Welcome back</h1>
+        <div className="auth-brand-badge">
+          <span className="auth-shield-dot"></span>
+          <span>SECURE ACCESS PORTAL</span>
+        </div>
+
+        <h1 className="auth-title">Welcome Back</h1>
         <p className="auth-subtitle">
-          Log in to access your SafeCircle dashboard and safety features.
+          Sign in to access your SafeCircle safety network and monitoring tools.
         </p>
 
-        {error && <p className="auth-error">{error}</p>}
+        {error && (
+          <div className="auth-error-banner" role="alert">
+            <span className="auth-error-icon">⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
 
-        <label>Email</label>
-        <input
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <div className="form-group">
+          <label htmlFor="login-email">Email Address</label>
+          <div className="input-with-icon">
+            <span className="input-icon" aria-hidden="true">✉️</span>
+            <input
+              id="login-email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
+          </div>
+        </div>
 
-        <label>Password</label>
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="form-group">
+          <div className="label-row">
+            <label htmlFor="login-password">Password</label>
+            <a href="#" className="auth-link-small" onClick={(e) => e.preventDefault()}>
+              Forgot password?
+            </a>
+          </div>
+          <div className="input-with-icon">
+            <span className="input-icon" aria-hidden="true">🔒</span>
+            <input
+              id="login-password"
+              type="password"
+              placeholder="Enter your account password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+        </div>
 
         <div className="auth-row">
           <label className="auth-checkbox">
-            <input type="checkbox" /> Remember me
+            <input type="checkbox" />
+            <span>Remember this device</span>
           </label>
-          <a href="#" className="auth-link-small">Forgot password?</a>
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "LOGGING IN..." : "LOG IN"}
+        <button type="submit" className="auth-submit-btn" disabled={loading}>
+          {loading ? (
+            <span className="btn-loading-content">
+              <span className="spinner-dot"></span> Authenticating...
+            </span>
+          ) : (
+            "SIGN IN TO SAFECIRCLE"
+          )}
         </button>
 
-        <p>
-          New to SafeCircle? <Link to="/signup">Create an account</Link>
-        </p>
+        <div className="auth-card-footer">
+          <p>
+            New to SafeCircle?{" "}
+            <Link to="/signup" className="auth-accent-link">
+              Create an account
+            </Link>
+          </p>
+        </div>
       </form>
     </div>
   );

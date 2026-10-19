@@ -1,50 +1,99 @@
-/* ===== GLOBAL RESET & VARIABLES ===== */
+/* ==========================================================================
+   SafeCircle 2.0 — Design System Tokens & Global Foundations
+   Premium, accessible, cohesive dark-theme design tokens
+   ========================================================================== */
 
 :root {
-  --bg-primary: #06080f;
-  --bg-secondary: #0f1320;
-  --bg-card: rgba(15, 20, 40, 0.6);
-  --bg-input: rgba(255, 255, 255, 0.05);
+  /* Surface & Background Tokens */
+  --bg-primary: #070913;
+  --bg-secondary: #0d1224;
+  --bg-tertiary: #131a33;
+  --bg-card: rgba(15, 21, 42, 0.72);
+  --bg-card-hover: rgba(20, 28, 56, 0.82);
+  --bg-card-solid: #0f152a;
+  --bg-input: rgba(255, 255, 255, 0.045);
+  --bg-input-focus: rgba(255, 255, 255, 0.08);
+  --bg-glass-elevated: rgba(18, 26, 52, 0.88);
 
-  --text-primary: #f0f0f8;
-  --text-secondary: #8b8fa3;
-  --text-muted: #5a5e72;
+  /* Text & Foreground Tokens */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8492a6;
+  --text-subtle: #4f5b72;
+  --text-on-accent: #ffffff;
 
+  /* Primary Brand & Emergency Palette */
   --accent: #ff2d55;
-  --accent-light: #ff6b81;
-  --accent-glow: rgba(255, 45, 85, 0.15);
+  --accent-hover: #ff476d;
+  --accent-light: #ff6b87;
+  --accent-subtle: rgba(255, 45, 85, 0.12);
+  --accent-glow: rgba(255, 45, 85, 0.28);
+  --accent-border: rgba(255, 45, 85, 0.35);
 
-  --green: #22c55e;
+  /* Semantic State Colors */
+  --green: #10b981;
+  --green-hover: #059669;
+  --green-subtle: rgba(16, 185, 129, 0.14);
+  --green-border: rgba(16, 185, 129, 0.32);
+
   --blue: #3b82f6;
-  --yellow: #facc15;
+  --blue-hover: #2563eb;
+  --blue-subtle: rgba(59, 130, 246, 0.14);
+  --blue-border: rgba(59, 130, 246, 0.32);
+
+  --yellow: #f59e0b;
+  --yellow-subtle: rgba(245, 158, 11, 0.14);
+  --yellow-border: rgba(245, 158, 11, 0.32);
+
   --orange: #f97316;
+  --orange-subtle: rgba(249, 115, 22, 0.14);
+  --orange-border: rgba(249, 115, 22, 0.32);
+
   --red: #ef4444;
+  --red-hover: #dc2626;
+  --red-subtle: rgba(239, 68, 68, 0.16);
+  --red-border: rgba(239, 68, 68, 0.36);
 
+  /* Border & Divider Tokens */
   --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-light: rgba(255, 255, 255, 0.14);
+  --border-focus: rgba(255, 45, 85, 0.55);
+  --border-highlight: rgba(255, 255, 255, 0.18);
 
+  /* Corner Radii */
+  --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-full: 999px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
 
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 30px rgba(255, 45, 85, 0.3);
+  /* Shadows & Elevation */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 48px -8px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 64px -12px rgba(0, 0, 0, 0.75);
+  --shadow-glow: 0 0 32px rgba(255, 45, 85, 0.28);
+  --shadow-glow-green: 0 0 24px rgba(16, 185, 129, 0.3);
+  --shadow-emergency: 0 0 50px rgba(255, 45, 85, 0.45), 0 20px 40px rgba(0, 0, 0, 0.7);
 
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --display: 'Poppins', 'Inter', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  /* Typography Stack */
+  --sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Poppins', var(--sans);
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
 
   font-family: var(--sans);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background-color: var(--bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -52,10 +101,29 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(ellipse at top, #111830 0%, #06080f 50%, #020308 100%);
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -15%, rgba(45, 55, 105, 0.25), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 85%, rgba(255, 45, 85, 0.05), transparent 60%),
+    radial-gradient(circle at 10% 40%, rgba(59, 130, 246, 0.04), transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  overflow-x: hidden;
 }
 
 #root {
@@ -64,23 +132,27 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
+/* Headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--display);
   font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
 }
 
 p {
   margin: 0;
+  color: var(--text-secondary);
 }
 
 a {
   color: var(--accent-light);
   text-decoration: none;
-  transition: var(--transition);
+  transition: color var(--transition-fast);
 }
 
 a:hover {
@@ -88,20 +160,84 @@ a:hover {
   text-decoration: underline;
 }
 
-code {
+code, kbd, samp, pre {
   font-family: var(--mono);
   font-size: 0.875rem;
-  padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
-  color: var(--text-primary);
 }
 
+code {
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xs);
+  color: #f1f5f9;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(7, 9, 19, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+  background-clip: padding-box;
+}
+
+/* Text Selection */
 ::selection {
-  background: rgba(255, 45, 85, 0.3);
-  color: #fff;
+  background: rgba(255, 45, 85, 0.35);
+  color: #ffffff;
 }
 
+/* Accessible Focus Ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Leaflet Map overrides for dark mode aesthetic */
+.leaflet-container {
+  background: #090d1c !important;
+  font-family: var(--sans) !important;
+}
+
+.leaflet-bar a {
+  background-color: rgba(15, 21, 42, 0.9) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: rgba(30, 41, 75, 0.95) !important;
+  color: #ffffff !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 21, 42, 0.96) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 21, 42, 0.96) !important;
+}
+
+/* Mobile responsive font adjustment */
 @media (max-width: 768px) {
   :root {
     font-size: 15px;

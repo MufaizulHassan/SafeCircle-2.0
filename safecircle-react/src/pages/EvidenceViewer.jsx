@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { apiFetch } from "../api/fetch";
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
 
 export default function EvidenceViewer() {
   const { token, user } = useSelector((state) => state.auth);
@@ -63,6 +62,7 @@ export default function EvidenceViewer() {
   }, [token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadVideo(selected);
     return () => {
       if (prevBlobUrl.current) {
