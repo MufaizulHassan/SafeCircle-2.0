@@ -757,8 +757,11 @@ body {
 }
 
 /* Map Card */
-.map-card {
+.map-card,
+.admin-map-card {
   text-align: left;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .map-card-header {
@@ -809,12 +812,25 @@ body {
   box-shadow: 0 0 6px var(--green);
 }
 
-#liveMap {
+#liveMap,
+.leaflet-container {
   width: 100%;
+  max-width: 100% !important;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: #080c1a;
-  overflow: hidden;
+  overflow: hidden !important;
+  position: relative !important;
+  isolation: isolate !important;
+  contain: paint layout !important;
+  clip-path: inset(0 round var(--radius-lg));
+}
+
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-map-pane {
+  max-width: 100%;
 }
 
 /* STATUS GRID (Under Map) */
@@ -1242,20 +1258,23 @@ select option {
 /* Checkbox */
 .auth-checkbox {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   font-size: 0.86rem;
   color: var(--text-secondary);
   cursor: pointer;
   line-height: 1.45;
   user-select: none;
+  padding: 6px 0;
+  min-height: 36px;
 }
 
 .auth-checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  min-width: 18px;
+  min-height: 18px;
   accent-color: var(--accent);
-  margin-top: 2px;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -3501,8 +3520,11 @@ select option {
     padding: 28px 16px;
   }
 
-  .auth-card {
-    padding: 28px 18px;
+  .auth-card,
+  .auth-card--wide {
+    padding: 24px 16px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .alert-button {
@@ -3522,4 +3544,54 @@ select option {
   .vr-otp-input {
     max-width: 100%;
   }
+
+  .vd-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vd-input-group input {
+    max-width: 100%;
+  }
+
+  .admin-header-title-flex,
+  .vd-header-flex,
+  .map-card-header,
+  .admin-users-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-ai-emotion-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .admin-user-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .admin-user-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .profile-details-summary {
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  .emergency-state-banner {
+    padding: 14px 16px;
+    font-size: 0.88rem;
+  }
+
+  .status-badge {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+  }
 }
+
